@@ -8,13 +8,15 @@
 public class BucketHash<K, V> {
 
     private Object[] hTable;
+    private int size;
     
     /**
      * Creates a hashtable with the size provided
      * @param size
      */
-    public BucketHash(int size) {
-        hTable = new Object[size];
+    public BucketHash(int s) {
+        hTable = new Object[s];
+        size = 0;
     }
     
     
@@ -27,10 +29,13 @@ public class BucketHash<K, V> {
      * @return the slot
      */
     public int insert(K key, V value) {
+        // if (insertion possible) { run sFold, find slot, insert, increment size, return slot}
+       
         return 1;
     }
     
     public int remove() {
+        // if (no problems) { use sFold to find slot, if match remove, otherwise traverse & remove }
         return 1;
     }
     
@@ -42,7 +47,12 @@ public class BucketHash<K, V> {
         return 1;
     }
     
-    public void sFold() {
-        
-    }
+    public int sfold(String s, int M) {
+        long sum = 0, mul = 1;
+        for (int i = 0; i < s.length(); i++) {
+          mul = (i % 4 == 0) ? 1 : mul * 256;
+          sum += s.charAt(i) * mul;
+        }
+        return (int)(Math.abs(sum) % M);
+      }
 }
