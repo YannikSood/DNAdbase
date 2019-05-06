@@ -18,12 +18,13 @@ public class MemManager {
     /**
      * Default constructor for memory manager.
      * 
-     * @param   mF                      binary file for memory manager
-     * @throws  FileNotFoundException   file name not found
+     * @param   mF              binary file for memory manager
+     * @throws IOException      bad input for file name
      */
-    public MemManager(String mF) throws FileNotFoundException {
+    public MemManager(String mF) throws IOException {
         // memory file
         this.memFile = new RandomAccessFile(mF, "rw");
+        this.memFile.setLength(0); // overwrite previous file?
         
         // free list
         this.freeList = new LinkedList<>();
@@ -197,6 +198,15 @@ public class MemManager {
         }
 
         return temp;
+    }
+    
+    /**
+     * Return the freelist for testing purposes.
+     * 
+     * @return  the list
+     */
+    LinkedList<MemHandle> getList() {
+        return this.freeList;
     }
     
     /**

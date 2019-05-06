@@ -1,4 +1,3 @@
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -21,8 +20,8 @@ public class DNAdbase {
      * 
      * @param args  String array containing input arguments.
      * 
-     * @throws IOException 
-     * @throws NumberFormatException 
+     * @throws IOException
+     * @throws NumberFormatException
      */
     public static void main(String[] args)
         throws NumberFormatException, IOException {

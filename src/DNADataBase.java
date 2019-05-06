@@ -18,9 +18,9 @@ public class DNADataBase {
      * Default constructor for DNA Database.
      * 
      * @param   fileName                name of binary file
-     * @throws  FileNotFoundException   file name not found
+     * @throws IOException 
      */
-    public DNADataBase(String fileName) throws FileNotFoundException {
+    public DNADataBase(String fileName) throws IOException {
         this.memManager = new MemManager(fileName);
     }
 

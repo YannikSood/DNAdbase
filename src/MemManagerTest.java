@@ -1,5 +1,7 @@
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.Arrays;
+import java.util.LinkedList;
 import student.TestCase;
 
 /**
@@ -14,13 +16,64 @@ public class MemManagerTest extends TestCase {
 
     /**
      * Default setup for each test.
-     * 
-     * @throws FileNotFoundException    file name not found
+     * @throws IOException 
      */
-    public void setUp() throws FileNotFoundException {
+    public void setUp() throws IOException {
         this.mem = new MemManager("mFile.bin");
         this.result = null;
     }
+    
+    /**
+     * Test insertion base case (empty freelist).
+     * 
+     * @throws IOException
+     */
+    public void testInsertBase() throws IOException {
+        // insert some sequences
+        MemHandle hanOne = mem.insert("ACGT", 4);
+        MemHandle hanTwo = mem.insert("ACGTAAAA", 8);
+        MemHandle hanThree = mem.insert("AAAT", 4);
+        
+        // free list size check
+        assertEquals(0, mem.getList().size());
+        
+        // handle checks
+        assertEquals(0, hanOne.getPosition());
+        assertEquals(4, hanOne.getLength());
+        
+        assertEquals(1, hanTwo.getPosition());
+        assertEquals(8, hanTwo.getLength());
+        
+        assertEquals(3, hanThree.getPosition());
+        assertEquals(4, hanThree.getLength());
+        
+        // memory file check
+        RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
+        result = new byte[4];
+        
+        for (int i = 0; i < 4; i++) {
+            result[i] = (byte)raf.read();
+        }
+        
+        assertEquals("[27, 27, 0, 3]", Arrays.toString(result));
+    }
+    
+    /**
+     * Test insertion when freelist is not empty.
+     */
+    public void testInsertFree() {
+        // add some free blocks to the list
+        LinkedList<MemHandle> list = mem.getList();
+        
+        
+        
+    }
+    
+    
+    /**
+     * Test insertion when freelist has no available free slots.
+     */
+    
 
     /**
      * Test stringToByteArray method base cases.
