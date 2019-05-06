@@ -5,9 +5,10 @@
  * @author yanniksood
  * @version 04/30/2019
  */
-public class BucketHash<K, V> {
+public class BucketHash  implements BucketHashInterface {
 
-    private Object[] hTable;
+    private TableEntry[] hTable;
+    private int maxSize;
     private int size;
     
     /**
@@ -15,32 +16,82 @@ public class BucketHash<K, V> {
      * @param size
      */
     public BucketHash(int s) {
-        hTable = new Object[s];
+        maxSize = s;
+        hTable = new TableEntry[maxSize];
         size = 0;
     }
     
     
     /**
-     * First checks if insertion is possible
+     * Assumes insertion is possible
      * (No Duplicates, Full Bucket)
      * Then Inserts and returns the slot it was inserted
      * @param key Key Handle
      * @param value Handle
      * @return the slot
      */
-    public int insert(K key, V value) {
-        // if (insertion possible) { run sFold, find slot, insert, increment size, return slot}
-       
-        return 1;
+    public int insert(Object key, Object value) {
+     // if (insertion possible) { run sFold, find slot, insert, increment size, return slot}
+        //Get slot
+        String k = (String) key;
+        String v = (String) value;
+        int i = sfold(k, size);
+        
+        //Check if slot is empty
+        if (hTable[i] == null) {
+            TableEntry temp = new TableEntry(k, v);
+            hTable[i] = temp;
+            size++;
+            return i;
+        }
+        //Else insert with collision resolution
+        
+        return -1;
     }
-    
-    public int remove() {
+
+    /**
+     * Removes and returns the entry
+     * @param key Key 
+     * @return the removed
+     */
+    public TableEntry remove(Object key) {
         // if (no problems) { use sFold to find slot, if match remove, otherwise traverse & remove }
-        return 1;
+        String k = (String) key;
+        int i = sfold(k, size);
+        if (hTable[i].getKey().equals(k)) {
+            TableEntry temp = hTable[i];
+            hTable[i] = null;
+            return temp;
+        }
+        else {
+            for (int j = 0; j < maxSize; j++) {
+                if (hTable[j].getKey().equals(k)) {
+                    TableEntry temp = hTable[j];
+                    hTable[j] = null;
+                    return temp;
+                } 
+            }
+        }
+        return null;
     }
-    
-    public int search() {
-        return 1;
+
+
+    @Override
+    public int search(Object key) {
+        String k = (String) key;
+        int i = sfold(k, size);
+        
+        if (hTable[i].getKey().equals(k)) {
+            return i;
+        }
+        else {
+            for (int j = 0; j < maxSize; j++) {
+                if (hTable[j].getKey().equals(k)) {
+                    return j;
+                } 
+            }
+        }
+        return -1;
     }
     
     public int reHash() {
@@ -54,5 +105,5 @@ public class BucketHash<K, V> {
           sum += s.charAt(i) * mul;
         }
         return (int)(Math.abs(sum) % M);
-      }
+    }
 }
