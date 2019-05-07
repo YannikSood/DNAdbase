@@ -144,11 +144,13 @@ public class MemManager {
         // if removing from end of binary file, add to freelist and resize else
         // add to freelist (no alter binary file, insert will overwrite)
         // freeList.add(new MemHandle(seqPos, seqLen));
-        freeList.add(h);
-        
         int lenConv = ((seqLen + 4 - 1) / 4);
+        
         if (seqPos + lenConv == memFile.length()) {
             memFile.setLength(memFile.length() - lenConv);
+        }
+        else {
+            freeList.add(h);
         }
         
         // return to original insert position and merge adjacent blocks
@@ -159,13 +161,28 @@ public class MemManager {
     /**
      * Get back a copy of a stored sequence.
      * 
-     * @param h     memory handle storing data
-     * @return      byte array containing sequence
+     * @param h             memory handle storing data
+     * @return              byte array containing sequence
+     * @throws IOException
      */
-    public byte[] getSequence(MemHandle h) {
+    public byte[] getSequence(MemHandle h) throws IOException {
+        // remember original grab position before seek
+        int orig = (int)memFile.getFilePointer();
         
+        // prepare byte array
+        int nBytes = ((h.getLength() + 4 - 1) / 4);
+        byte[] temp = new byte[nBytes];
+        
+        // grab sequence
+        memFile.seek(h.getPosition());
+        
+        for(int i = 0; i < nBytes; i++) {
+            temp[i] = memFile.readByte();
+        }
 
-        return null;
+        // return to original insert position and return sequence
+        memFile.seek(orig);
+        return temp;
     }
 
     /**

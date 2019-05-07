@@ -338,6 +338,27 @@ public class MemManagerTest extends TestCase {
     }
     
     /**
+     * Test getSequence method.
+     * 
+     * @throws IOException
+     */
+    public void testGetSequence() throws IOException {
+        MemHandle one = mem.insert("AAAAA", 5); // 2 bytes
+        MemHandle two = mem.insert("ACGT", 4); // 1 byte
+        MemHandle three = mem.insert(
+            "AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
+        
+        byte[] seqOne = mem.getSequence(one);
+        byte[] seqTwo = mem.getSequence(two);
+        byte[] seqThree = mem.getSequence(three);
+        
+        assertEquals("[0, 0]", Arrays.toString(seqOne));
+        assertEquals("[27]", Arrays.toString(seqTwo));
+        assertEquals("[0, -1, 85, -86, 0, 85, -86, -1, 0, -1]",
+            Arrays.toString(seqThree));
+    }
+    
+    /**
      * Test stringToByteArray method base cases.
      */
     public void testStringToByteArrayBase() {
