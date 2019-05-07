@@ -54,7 +54,7 @@ public class MemManager {
             memFile.write(seq);
             // System.out.println(" " + seqPos); // printing offset
             
-            update(); // merge adjacent free blocks if any
+            // update(); // merge adjacent free blocks if any
             
             return insertHandle;
         }
@@ -81,18 +81,23 @@ public class MemManager {
                 // len is the sequence being inserted
                 // getLength() will return size of the free block
                 MemHandle freeBlock = freeList.get(i);
+                int lenConv = ((sq.length() + 4 - 1) / 4);
+                int blckConv = ((freeBlock.getLength() + 4 - 1) / 4);
                 
-                if (freeBlock.getPosition() + len < freeBlock.getLength()) {
-                        // replacement required
-                        int newLen = freeBlock.getLength() - len;
-                        int newPos = (int)memFile.getFilePointer();
-                        freeList.set(i, new MemHandle(newPos, newLen));
+                if (lenConv == blckConv) {
+                    freeList.remove(i);
+                }
+                else {
+                    int newLen = blckConv - lenConv; // length in bytes
+                    int newPos = (int)memFile.getFilePointer();
+
+                    freeList.set(i, new MemHandle(newPos, newLen * 4));
                 }
                 
                 // return to original insert position
                 memFile.seek(temp);
                 
-                update(); // merge adjacent free blocks if any
+                // update(); // merge adjacent free blocks if any
                 
                 // return handle of insertion
                 return insertHandle;
@@ -106,7 +111,7 @@ public class MemManager {
         
         memFile.write(seq);
         
-        update(); // merge adjacent free blocks if any
+        // update(); // merge adjacent free blocks if any
         
         return insertHandle;
     }
@@ -118,7 +123,7 @@ public class MemManager {
      */
     public void release(MemHandle h) {
         
-
+        
     }
 
     /**
@@ -211,7 +216,7 @@ public class MemManager {
     }
     
     /**
-     * This method is called at the end of an insertion or removal to
+     * This method is called at the end of a removal to
      * handle adjacent freeblock merging.
      * 
      * @return      true if merging occured

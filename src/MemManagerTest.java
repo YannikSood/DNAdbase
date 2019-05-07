@@ -73,14 +73,82 @@ public class MemManagerTest extends TestCase {
         // and overwrite
         LinkedList<MemHandle> list = mem.getList();
         list.add(new MemHandle(0, 4));
+        list.add(new MemHandle(5, 8));
         
+        // should skip to the second block
+        assertEquals(2, mem.getList().size());
+        MemHandle handOne = mem.insert("TTTTT", 5); // this actually uses up 2 bytes
+        assertEquals(1, mem.getList().size());
         
+        // should insert to the first block
+        MemHandle handTwo = mem.insert("TTTA", 4);
+        assertEquals(0, mem.getList().size());
+        
+        // we used all of second block with TTTTT_ _ _
+        // used all of first block with TTTA
+        // should add to end of file because no suitable block
+        MemHandle handThree = mem.insert("ACGT", 4);
+        
+        // handle checks
+        assertEquals(5, handOne.getPosition());
+        assertEquals(0, handTwo.getPosition());
+        assertEquals(10, handThree.getPosition());
+    }
+    
+    /**
+     * Test insertion when freelist is not empty (additional edge cases).
+     * 
+     * @throws IOException
+     */
+    public void testInsertFreeEdges() throws IOException {
+        // add A's to visually color up the file
+        mem.insert("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 40);
+        
+        // add some free blocks to the list
+        // even though they're not really free here, we'll assume they are
+        // and overwrite
+        LinkedList<MemHandle> list = mem.getList();
+        list.add(new MemHandle(0, 4));
+        list.add(new MemHandle(5, 8));
+        
+        // use first block
+        assertEquals(2, mem.getList().size());
+        MemHandle handOne = mem.insert("T", 1);
+        assertEquals(1, mem.getList().size());
+        
+        // use half of second block and allocate remainder
+        MemHandle handTwo = mem.insert("TTTA", 4);
+        assertEquals(1, mem.getList().size());
+        
+        // use remainder
+        MemHandle handThree = mem.insert("ACGT", 4);
+        
+        // handle checks
+        assertEquals(0, handOne.getPosition());
+        assertEquals(5, handTwo.getPosition());
+        assertEquals(6, handThree.getPosition());
     }
     
     
     /**
      * Test insertion when freelist has no available free slots.
+     * 
+     * @throws IOException
      */
+    public void testInsertNoFree() throws IOException {
+        // add A's to visually color up the file
+        mem.insert("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 40);
+        
+        // add some free blocks to the list
+        // even though they're not really free here, we'll assume they are
+        // and overwrite
+        LinkedList<MemHandle> list = mem.getList();
+        list.add(new MemHandle(0, 4));
+        list.add(new MemHandle(5, 8));
+        
+        // request for a block that is too large, will add to end
+        MemHandle handOne = mem.insert("ACGTACGTACGTACGT", 16);
+    }
     
 
     /**
