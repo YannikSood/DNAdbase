@@ -119,18 +119,38 @@ public class MemManager {
     /**
      * Release space associated with a record.
      * 
-     * @param h
+     * @param h             memory handle storing data
+     * @throws IOException  
      */
-    public void release(MemHandle h) {
+    public void release(MemHandle h) throws IOException {
+        // if the file is empty, return
+        if (memFile.length() == 0) {
+            return;
+        }
         
+        // remember original remove position before seek
+        int temp = (int)memFile.getFilePointer();
+
+        // grab relevant data from handle
+        int seqPos = h.getPosition();
+        int seqLen = h.getLength();
         
+        // seek to the position and remove the record.
+        memFile.seek(seqPos);
+        
+        // add to freelist (no alter binary file, insert will overwrite)
+        freeList.add(new MemHandle(seqPos, seqLen));
+        
+        // return to original insert position and merge adjacent blocks
+        memFile.seek(temp);
+        update();
     }
 
     /**
      * Get back a copy of a stored record.
      * 
-     * @param h
-     * @return
+     * @param h     memory handle storing data
+     * @return      byte array containing sequence
      */
     public byte[] getRecord(MemHandle h) {
         
