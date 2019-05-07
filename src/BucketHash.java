@@ -44,7 +44,7 @@ public class BucketHash  implements BucketHashInterface {
             size++;
             return i;
         }
-        //Else insert with collision resolution
+        //Else insert with collision resolution (Linear Probe)
         
         return -1;
     }
