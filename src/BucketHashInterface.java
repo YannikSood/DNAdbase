@@ -1,5 +1,5 @@
 
-public interface BucketHashInterface <K, V> {
+public interface BucketHashInterface <T, K, V> {
 
     
     /**
@@ -10,7 +10,7 @@ public interface BucketHashInterface <K, V> {
      * @param value Handle
      * @return the slot
      */
-    public int insert(K key, V value);
+    public int insert(T string, K key, V value);
     
     public TableEntry remove(K key);
     
