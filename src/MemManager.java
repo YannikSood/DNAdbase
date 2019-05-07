@@ -146,30 +146,41 @@ public class MemManager {
         }
         else {
             // calculations to keep list ordered by offset
-            boolean append = true;
+            int addPos = 0;
+            boolean found = false;
             
-            if (freeList.size() == 0) {
-                freeList.add(new MemHandle(seqPos, lenConv));
-                append = false;
+            if (freeList.size() == 0) { // empty list
+                addPos = 0;
             }
-            else {
-                for (int i = 0; i < freeList.size(); i++) {
+            else if (freeList.size() == 1) { // one element
+                if (freeList.get(0).getPosition() > seqPos) { // greater than
+                    addPos = 0;
+                }
+                else { // less than
+                    addPos = 1;
+                }
+            }
+            else { // more than one element
+                for (int i = 0; !found && i < freeList.size(); i++) {
                     if (freeList.get(i).getPosition() > seqPos) {
-                        freeList.add(i, new MemHandle(seqPos, lenConv));
-                        append = false;
+                        addPos = i;
+                        found = true;
                     }
                 }
             }
             
-            if (append) {
+            // add and merge adjacent slots if needed
+            if (!found) {
                 freeList.add(new MemHandle(seqPos, lenConv));
+                update(freeList.size() - 1);
+            }
+            else {
+                freeList.add(addPos, new MemHandle(seqPos, lenConv));
+                update(addPos);
             }
             
             memFile.seek(temp); // return to home
         }
-        
-        // merge adjacent blocks if any found
-        update();
     }
 
     /**
@@ -280,21 +291,40 @@ public class MemManager {
      * This method is called at the end of a removal to
      * handle adjacent freeblock merging.
      * 
-     * @return      true if merging occured
-     *              false if freelist is empty or no merge occured
+     * @param i     index in freelist to be updated
      */
-    private boolean update() {
-        boolean result = false;
-        
-        // merge adjacent blocks if any are found in freelist
-        for (int i = 0; i < freeList.size(); i++) {
-            
-            
-            result = true;
+    private void update(int i) {     
+        if (freeList.size() == 0) { // empty
+            return;
+        }
+        else if (freeList.size() == 1) { // one element
+            return; // nothing to do
+        }
+        else { // more than one element
+            if (i == 0) { // left side
+                MemHandle next = freeList.get(i + 1);
+                
+                
+                
+                
+            }
+            else if (i == freeList.size() - 1) { // right side
+                MemHandle prev = freeList.get(i - 1);
+                
+                
+                
+                
+            }
+            else { // somewhere in middle
+                MemHandle prev = freeList.get(i - 1);
+                MemHandle next = freeList.get(i + 1);
+                
+                
+                
+                
+            }
         }
         
-        
-        return result;
     }
 
 }

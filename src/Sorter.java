@@ -44,7 +44,7 @@ public class Sorter {
             this.mFile = mF;
 
             // initialize database
-            this.dBase = new DNADataBase(mFile);
+            this.dBase = new DNADataBase(mFile, HTSIZE);
 
             // parsing
             try {

@@ -151,7 +151,7 @@ public class MemManagerTest extends TestCase {
         list.add(new MemHandle(5, 2));
         
         // request for a block that is too large, will add to end
-        MemHandle handOne = mem.insert("ACGTACGTACGTACGT", 16);
+        mem.insert("ACGTACGTACGTACGT", 16);
         assertEquals(2, mem.getList().size());
     }
     
@@ -180,10 +180,9 @@ public class MemManagerTest extends TestCase {
      */
     public void testReleaseMiddle() throws IOException {
         // insert some sequences
-        MemHandle one = mem.insert("AAAAA", 5); // 2 bytes
+        mem.insert("AAAAA", 5); // 2 bytes
         MemHandle two = mem.insert("ACGT", 4); // 1 byte
-        MemHandle three = mem.insert(
-            "AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
+        mem.insert("AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
         
         // size check
         RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
@@ -216,9 +215,8 @@ public class MemManagerTest extends TestCase {
     public void testReleaseLeft() throws IOException {
         // insert some sequences
         MemHandle one = mem.insert("AAAAA", 5); // 2 bytes
-        MemHandle two = mem.insert("ACGT", 4); // 1 byte
-        MemHandle three = mem.insert(
-            "AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
+        mem.insert("ACGT", 4); // 1 byte
+        mem.insert("AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
         
         // size check
         RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
@@ -252,8 +250,8 @@ public class MemManagerTest extends TestCase {
      */
     public void testReleaseRight() throws IOException {
         // insert some sequences
-        MemHandle one = mem.insert("AAAAA", 5); // 2 bytes
-        MemHandle two = mem.insert("ACGT", 4); // 1 byte
+        mem.insert("AAAAA", 5); // 2 bytes
+        mem.insert("ACGT", 4); // 1 byte
         MemHandle three = mem.insert(
             "AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
         
@@ -267,6 +265,8 @@ public class MemManagerTest extends TestCase {
         assertEquals(3, raf.length()); // check size decreased
         
         assertEquals(0, mem.getList().size()); // not added to freelist
+        
+        raf.close();
     }
     
     /**
@@ -368,12 +368,11 @@ public class MemManagerTest extends TestCase {
      */
     public void testReleaseInsertSearches() throws IOException {
         // insert some sequences
-        MemHandle one = mem.insert("AAAAA", 5); // 2 bytes
+        mem.insert("AAAAA", 5); // 2 bytes
         MemHandle two = mem.insert("ACGT", 4); // 1 byte
-        MemHandle three = mem.insert(
-            "AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
+        mem.insert("AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
         MemHandle four = mem.insert("TTTTCC", 6); // 2 bytes
-        MemHandle five = mem.insert("G", 1); // 1 byte
+        mem.insert("G", 1); // 1 byte
         
         // size check
         RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
@@ -403,6 +402,8 @@ public class MemManagerTest extends TestCase {
         result[0] = raf.readByte();
         
         assertEquals("[0]", print(result));
+        
+        raf.close();
     }
     
     /**
@@ -414,12 +415,11 @@ public class MemManagerTest extends TestCase {
      */
     public void testReleaseInsertSearchesSplit() throws IOException {
         // insert some sequences
-        MemHandle one = mem.insert("AAAAA", 5); // 2 bytes
+        mem.insert("AAAAA", 5); // 2 bytes
         MemHandle two = mem.insert("ACGT", 4); // 1 byte
-        MemHandle three = mem.insert(
-            "AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
+        mem.insert("AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
         MemHandle four = mem.insert("TTTTCCTTACGTACG", 15); // 4 bytes
-        MemHandle five = mem.insert("GG", 1); // 1 byte
+        mem.insert("GG", 1); // 1 byte
         
         // size check
         RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
@@ -448,6 +448,8 @@ public class MemManagerTest extends TestCase {
         mem.insert("ACGT", 1); // appends to end since freelist is empty
         raf.seek(raf.length() - 1);
         assertEquals(27, raf.readByte());
+        
+        raf.close();
     }
     
     /**
@@ -473,12 +475,47 @@ public class MemManagerTest extends TestCase {
     
     /**
      * Test freelist insertions before moving on to update() tests.
+     * 
+     * @throws IOException
      */
-    public void testFreeListInsertions() {
+    public void testFreeListInsertions() throws IOException {
+        // create blocks for releasing
+        MemHandle one = mem.insert("AAAA", 4); // 0
+        MemHandle two = mem.insert("CCCC", 4); // 1
+        MemHandle three = mem.insert("GGGGAAAA", 8); // 2
+        MemHandle four = mem.insert("TTTT", 4); // 4
+        MemHandle five = mem.insert("AAAA", 4); // 5
+        MemHandle six = mem.insert("C", 1); // 6
+        MemHandle seven = mem.insert("GGGG", 4); // 7
+        MemHandle eight = mem.insert("TTT", 3); // 8
+        
+        // check the list (note variable name and index difference)
         LinkedList<MemHandle> list = mem.getList();
         
-        list.add(new MemHandle(0, 1));
-        list.add(new MemHandle(5, 2));
+        RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
+        assertEquals(9, raf.length());
+        
+        mem.release(one);
+        mem.release(six);
+        assertEquals(1, two.getPosition());
+        mem.release(two); // should go between one and six
+        mem.release(three); // should go between two and six
+        mem.release(eight); // last element, not added to freelist
+        assertEquals(8, raf.length());
+        mem.release(seven); // last element, not added to freelist
+        assertEquals(7, raf.length());
+        mem.release(five); // should go between three and six
+        mem.release(four); // should go between three and five
+        
+        // check they are ordered by offset
+        assertEquals(0, list.get(0).getPosition());
+        assertEquals(1, list.get(1).getPosition());
+        assertEquals(2, list.get(2).getPosition()); // two bytes ended here
+        assertEquals(4, list.get(3).getPosition());
+        assertEquals(5, list.get(4).getPosition());
+        assertEquals(6, list.get(5).getPosition());
+        
+        raf.close();
     }
     
     /**
