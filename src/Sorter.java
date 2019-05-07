@@ -27,8 +27,8 @@ public class Sorter {
      * @param hTS                       desired hash table size
      * @param mF                        memory manager binary file name
      * 
-     * @throws IOException 
-     * @throws NumberFormatException 
+     * @throws IOException
+     * @throws NumberFormatException
      */
     public Sorter(String cF, String hF, String hTS,
         String mF) throws NumberFormatException, IOException {

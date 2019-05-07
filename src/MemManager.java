@@ -81,11 +81,12 @@ public class MemManager {
                 // len is the sequence being inserted
                 // getLength() will return size of the free block
                 MemHandle freeBlock = freeList.get(i);
+                
                 if (freeBlock.getPosition() + len < freeBlock.getLength()) {
-                    // replacement required
-                    int newLen = freeBlock.getLength() - len;
-                    int newPos = (int)memFile.getFilePointer();
-                    freeList.set(i, new MemHandle(newPos, newLen));
+                        // replacement required
+                        int newLen = freeBlock.getLength() - len;
+                        int newPos = (int)memFile.getFilePointer();
+                        freeList.set(i, new MemHandle(newPos, newLen));
                 }
                 
                 // return to original insert position

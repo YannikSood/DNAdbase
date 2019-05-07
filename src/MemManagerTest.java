@@ -16,7 +16,8 @@ public class MemManagerTest extends TestCase {
 
     /**
      * Default setup for each test.
-     * @throws IOException 
+     * 
+     * @throws IOException
      */
     public void setUp() throws IOException {
         this.mem = new MemManager("mFile.bin");
@@ -60,11 +61,18 @@ public class MemManagerTest extends TestCase {
     
     /**
      * Test insertion when freelist is not empty.
+     * 
+     * @throws IOException
      */
-    public void testInsertFree() {
-        // add some free blocks to the list
-        LinkedList<MemHandle> list = mem.getList();
+    public void testInsertFree() throws IOException {
+        // add A's to visually color up the file
+        mem.insert("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 40);
         
+        // add some free blocks to the list
+        // even though they're not really free here, we'll assume they are
+        // and overwrite
+        LinkedList<MemHandle> list = mem.getList();
+        list.add(new MemHandle(0, 4));
         
         
     }
