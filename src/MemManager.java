@@ -55,8 +55,6 @@ public class MemManager {
             // System.out.println(seqPos); // printing offset after insert
             // System.out.println(memFile.length()); // file size after insert
             
-            // update(); // merge adjacent free blocks if any
-            
             return insertHandle;
         }
 
@@ -73,7 +71,7 @@ public class MemManager {
                 int temp = (int)memFile.getFilePointer();
                 
                 // get offset, seek to that position
-                int offSet = freeList.get(i).getPosition();
+                int offSet = freeBlock.getPosition();
                 memFile.seek(offSet);
                 
                 // get sequence byte array, insert
@@ -99,8 +97,6 @@ public class MemManager {
                 // return to original insert position
                 memFile.seek(temp);
                 
-                // update(); // merge adjacent free blocks if any
-                
                 // return handle of insertion
                 return insertHandle;
             }
@@ -112,8 +108,6 @@ public class MemManager {
         MemHandle insertHandle = new MemHandle(seqPos, len);
         
         memFile.write(seq);
-        
-        // update(); // merge adjacent free blocks if any
         
         return insertHandle;
     }
@@ -151,11 +145,30 @@ public class MemManager {
             memFile.seek(memFile.length());
         }
         else {
-            freeList.add(new MemHandle(seqPos, lenConv));
-            memFile.seek(temp);
+            // calculations to keep list ordered by offset
+            boolean append = true;
+            
+            if (freeList.size() == 0) {
+                freeList.add(new MemHandle(seqPos, lenConv));
+                append = false;
+            }
+            else {
+                for (int i = 0; i < freeList.size(); i++) {
+                    if (freeList.get(i).getPosition() > seqPos) {
+                        freeList.add(i, new MemHandle(seqPos, lenConv));
+                        append = false;
+                    }
+                }
+            }
+            
+            if (append) {
+                freeList.add(new MemHandle(seqPos, lenConv));
+            }
+            
+            memFile.seek(temp); // return to home
         }
         
-        // return to original insert position and merge adjacent blocks
+        // merge adjacent blocks if any found
         update();
     }
 

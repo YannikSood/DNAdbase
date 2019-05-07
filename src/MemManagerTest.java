@@ -472,6 +472,23 @@ public class MemManagerTest extends TestCase {
     }
     
     /**
+     * Test freelist insertions before moving on to update() tests.
+     */
+    public void testFreeListInsertions() {
+        LinkedList<MemHandle> list = mem.getList();
+        
+        list.add(new MemHandle(0, 1));
+        list.add(new MemHandle(5, 2));
+    }
+    
+    /**
+     * Test update() method for case that will cover all other cases.
+     */
+    public void testUpdate() {
+        
+    }
+    
+    /**
      * Test stringToByteArray method base cases.
      */
     public void testStringToByteArrayBase() {
