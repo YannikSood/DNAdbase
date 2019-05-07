@@ -36,7 +36,8 @@ public class BucketHash implements BucketHashInterface {
     public int getSize() {
         return size;
     }
-    
+
+
     /**
      * Get the size
      * 
@@ -66,29 +67,28 @@ public class BucketHash implements BucketHashInterface {
         // Get slot
         String k = seqID;
         int i = sfold(k, maxSize);
-        //int bucket = (i % bucketSize);
+        // int bucket = (i % bucketSize);
+      
+        
+        
+        for (int j = 0; j < 32; j++) {
+            if (hTable[i] == null || hTable[i].getSlot() == -1) {
+                break;
+            }
+            else if ((i + 1) % 32 == 0) {
+                i -= 31;
+            }
+            else {
+                i++;
+            }
 
-        // Check if slot is empty/tombstone
+        }
         if (hTable[i] == null || hTable[i].getSlot() == -1) {
             TableEntry temp = new TableEntry(key, value);
             temp.setSlot(i);
             hTable[i] = temp;
             size++;
             return i;
-        }
-        else {
-            // Bucket hash ?
-            int bP = i / bucketSize;
-            
-            for (int j = i; j < maxSize; j++) {
-                if (hTable[j] == null || hTable[j].getSlot() == -1) {
-                    TableEntry temp = new TableEntry(key, value);
-                    temp.setSlot(j);
-                    hTable[j] = temp;
-                    size++;
-                    return j;
-                }
-            }
         }
 
         return -1;
@@ -99,7 +99,8 @@ public class BucketHash implements BucketHashInterface {
      * A method to return the table entry at the slot
      * Used for remove, search and print
      * 
-     * @param i the slot to peek
+     * @param i
+     *            the slot to peek
      * @return the tableEntry at the slot
      */
     public TableEntry get(int i) {
@@ -114,7 +115,8 @@ public class BucketHash implements BucketHashInterface {
     /**
      * Insert tombstone
      * 
-     * @param slot the slot to insert
+     * @param slot
+     *            the slot to insert
      */
     public void insertTomb(int slot) {
         TableEntry tomb = new TableEntry(null, null);
@@ -123,10 +125,14 @@ public class BucketHash implements BucketHashInterface {
         size--;
     }
 
+
     /**
      * Sfold
-     * @param s string
-     * @param M size
+     * 
+     * @param s
+     *            string
+     * @param M
+     *            size
      * @return slot
      */
     public int sfold(String s, int M) {
@@ -150,76 +156,6 @@ public class BucketHash implements BucketHashInterface {
 
         sum = (sum * sum) >> 8;
         return (int)(Math.abs(sum) % M);
-    }
-
-
-    /**
-     * String parser converts Strings to byte array.
-     * 
-     * A - 00 - 0
-     * C - 01 - 1
-     * G - 10 - 2
-     * T - 11 - 3
-     * 
-     * @param s
-     *            String to be converted
-     */
-    public byte[] stringToByteArray(String s) {
-        // create byte array of appropriate length
-        // each letter is 2 bits
-        int numBytes = ((s.length() + 4 - 1) / 4);
-        byte[] temp = new byte[numBytes];
-
-        // temp int holds changes
-        int b = 0x00;
-
-        // byte counter
-        int byteCount = 0;
-
-        // actual work
-        for (int i = 0; i < s.length(); i++) {
-            switch (s.charAt(i)) {
-                case 'A':
-                    int a = 0x00 << (6 - ((i % 4) * 2)); // shift
-                    b = (b + a); // modify
-
-                    break;
-                case 'C':
-                    int c = 0x01 << (6 - ((i % 4) * 2)); // shift
-                    b = (b + c); // modify
-
-                    break;
-                case 'G':
-                    int g = 0x02 << (6 - ((i % 4) * 2)); // shift
-                    b = (b + g); // modify
-
-                    break;
-                case 'T':
-                    int t = 0x03 << (6 - ((i % 4) * 2)); // shift
-                    b = (b + t); // modify
-
-                    break;
-                default:
-                    // do nothing
-                    break;
-            }
-
-            // if a byte is full, add to byte array, increment count and reset
-            if ((i + 1) % 4 == 0) {
-                temp[byteCount] = (byte)(b & 0xff); // grab byte
-                byteCount++;
-                b = 0x00;
-            }
-            // if it wasn't full and we're at end of string, add remainder
-            else if (i == s.length() - 1) {
-                temp[byteCount] = (byte)(b & 0xff); // grab byte
-                byteCount++;
-                b = 0x00;
-            }
-
-        }
-
-        return temp;
     }
 
 
