@@ -73,12 +73,12 @@ public class MemManagerTest extends TestCase {
         // even though they're not really free here, we'll assume they are
         // and overwrite
         LinkedList<MemHandle> list = mem.getList();
-        list.add(new MemHandle(0, 4));
-        list.add(new MemHandle(5, 8));
+        list.add(new MemHandle(0, 1));
+        list.add(new MemHandle(5, 2));
         
         // should skip to the second block
         assertEquals(2, mem.getList().size());
-        MemHandle handOne = mem.insert("TTTTT", 5); // this actually uses up 2 bytes
+        MemHandle handOne = mem.insert("TTTTT", 5); // actually uses up 2 bytes
         assertEquals(1, mem.getList().size());
         
         // should insert to the first block
@@ -109,8 +109,8 @@ public class MemManagerTest extends TestCase {
         // even though they're not really free here, we'll assume they are
         // and overwrite
         LinkedList<MemHandle> list = mem.getList();
-        list.add(new MemHandle(0, 4));
-        list.add(new MemHandle(5, 8));
+        list.add(new MemHandle(0, 1));
+        list.add(new MemHandle(5, 2));
         
         // use first block
         assertEquals(2, mem.getList().size());
@@ -118,11 +118,14 @@ public class MemManagerTest extends TestCase {
         assertEquals(1, mem.getList().size());
         
         // use half of second block and allocate remainder
+        assertEquals(2, mem.getList().get(0).getLength());
         MemHandle handTwo = mem.insert("TTTA", 4);
         assertEquals(1, mem.getList().size());
+        assertEquals(1, mem.getList().get(0).getLength());
         
         // use remainder
-        MemHandle handThree = mem.insert("ACGT", 4);
+        MemHandle handThree = mem.insert("A", 1);
+        assertEquals(0, mem.getList().size());
         
         // handle checks
         assertEquals(0, handOne.getPosition());
@@ -144,11 +147,12 @@ public class MemManagerTest extends TestCase {
         // even though they're not really free here, we'll assume they are
         // and overwrite
         LinkedList<MemHandle> list = mem.getList();
-        list.add(new MemHandle(0, 4));
-        list.add(new MemHandle(5, 8));
+        list.add(new MemHandle(0, 1));
+        list.add(new MemHandle(5, 2));
         
         // request for a block that is too large, will add to end
         MemHandle handOne = mem.insert("ACGTACGTACGTACGT", 16);
+        assertEquals(2, mem.getList().size());
     }
     
     /**
@@ -160,7 +164,7 @@ public class MemManagerTest extends TestCase {
         Exception exception = null;
         
         try {
-            mem.release(new MemHandle(0, 4));
+            mem.release(new MemHandle(0, 1));
         }
         catch (IOException e) {
             exception = e;
@@ -170,7 +174,7 @@ public class MemManagerTest extends TestCase {
     }
     
     /**
-     * Testing release method on non-empty file. Middle case.
+     * Testing release method. Middle case.
      * 
      * @throws IOException
      */
@@ -189,9 +193,11 @@ public class MemManagerTest extends TestCase {
         assertEquals(0, mem.getList().size());
         mem.release(two); // should release middle 1 byte, does not modify file
         assertEquals(13, raf.length());
-        
         assertEquals(1, mem.getList().size()); // added to freelist
-        assertEquals(two, mem.getList().get(0)); // check they're the same
+        
+        // check freeblock handle
+        assertEquals(2, mem.getList().get(0).getPosition());
+        assertEquals(1, mem.getList().get(0).getLength());
         
         // check no change occurred
         result = new byte[1];
@@ -224,7 +230,10 @@ public class MemManagerTest extends TestCase {
         assertEquals(13, raf.length());
         
         assertEquals(1, mem.getList().size()); // added to freelist
-        assertEquals(one, mem.getList().get(0)); // check they're the same
+        
+        // check freeblock handle
+        assertEquals(0, mem.getList().get(0).getPosition());
+        assertEquals(2, mem.getList().get(0).getLength());
         
         // check no change occurred
         result = new byte[2];
@@ -255,10 +264,9 @@ public class MemManagerTest extends TestCase {
         // release right
         assertEquals(0, mem.getList().size());
         mem.release(three); // should release right 10 bytes, trims size
-        assertEquals(3, raf.length());
+        assertEquals(3, raf.length()); // check size decreased
         
-        assertEquals(1, mem.getList().size()); // added to freelist
-        assertEquals(three, mem.getList().get(0)); // check they're the same
+        assertEquals(0, mem.getList().size()); // not added to freelist
     }
     
     /**
@@ -267,25 +275,11 @@ public class MemManagerTest extends TestCase {
      * @throws IOException
      */
     public void testReleaseInsert() throws IOException {
-        // insert some sequences
-        MemHandle one = mem.insert("AAAAA", 5); // 2 bytes
-        MemHandle two = mem.insert("ACGT", 4); // 1 byte
-        MemHandle three = mem.insert(
-            "AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
-        
-        // size check
         RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
+        testReleaseLeft(); // release left
         assertEquals(13, raf.length());
         
-        // release left
-        assertEquals(0, mem.getList().size());
-        mem.release(one); // should release left 2 bytes, does not modify file
-        assertEquals(13, raf.length());
-        
-        assertEquals(1, mem.getList().size()); // added to freelist
-        assertEquals(one, mem.getList().get(0)); // check they're the same
-        
-        mem.insert("TTTTTTT", 4); // insert 2 bytes, should overwrite
+        MemHandle hand = mem.insert("TTTTTTT", 7); // insert 2 bytes, overwrite
         assertEquals(13, raf.length()); // size doesn't change
         
         // check change
@@ -296,20 +290,27 @@ public class MemManagerTest extends TestCase {
         
         assertEquals("[-1, -4]", Arrays.toString(result));
         raf.close();
+        
+        // check handle (for sanity)
+        assertEquals(0, hand.getPosition());
+        assertEquals(7, hand.getLength());
+        
     }
     
     /**
-     * Test a release followed by an insertion that inserts to free block.
-     * Another free block should result from this.
+     * Test a release followed by an insertion that inserts to end when
+     * freelist is empty.
      * 
      * @throws IOException
      */
-    public void testReleaseInsertFree() throws IOException {
+    public void testReleaseInsertEmptyFreeList() throws IOException {
         RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
-        testReleaseRight();
+        testReleaseRight(); // release right
         assertEquals(3, raf.length());
+        assertEquals(0, mem.getList().size());
 
-        mem.insert("ACCATT", 6); // new insertion should append, 2 bytes
+        // new insertion should append, 2 bytes
+        MemHandle hand = mem.insert("ACCATT", 6);
         
         // check change
         assertEquals(5, raf.length());
@@ -322,18 +323,48 @@ public class MemManagerTest extends TestCase {
         assertEquals("[20, -16]", Arrays.toString(result));
         raf.close();
         
-        // 2 bytes out of the 10 that were removed, therefore list should
-        // contains a freeblock of 8 bytes now
-        assertEquals(1, mem.getList().size());
-        int newSize = ((mem.getList().get(0).getLength() + 4 - 1) / 4);
-        assertEquals(8, newSize);
+        // check handle (for sanity)
+        assertEquals(3, hand.getPosition());
+        assertEquals(6, hand.getLength());
     }
     
     /**
      * Test a release followed by an insertion that is unable to find
      * suitable freeblock and therefore appends to end.
+     * 
+     * Note: NEFAppend stands for Not Empty Free Append
+     * 
+     * @throws IOException
      */
-    public void testReleaseInsertAppend() {
+    public void testReleaseInsertNEFAppend() throws IOException {
+        RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
+        testReleaseLeft(); // release left
+        assertEquals(13, raf.length());
+        assertEquals(1, mem.getList().size());
+        
+        MemHandle handOne = mem.insert("TTTTTTTTT", 9); // insert 3 bytes, appends
+        assertEquals(16, raf.length()); // size increases
+        
+        // sanity check that overwrite is working
+        MemHandle handTwo = mem.insert("ACGTT", 5);
+        assertEquals(16, raf.length()); // no change in size
+        
+        assertEquals(27, raf.readByte());
+        assertEquals(-64, raf.readByte());
+        raf.close();
+        
+        // check handle (for sanity)
+        assertEquals(13, handOne.getPosition());
+        assertEquals(9, handOne.getLength());
+        assertEquals(0, handTwo.getPosition());
+        assertEquals(5, handTwo.getLength());
+    }
+    
+    /**
+     * Test a release following by insertion looks through more than
+     * one block to find a suitable location.
+     */
+    public void testReleaseInsertSearches() {
         
     }
     
@@ -426,7 +457,10 @@ public class MemManagerTest extends TestCase {
     }
     
     /**
-     * Private helper for printing.
+     * Private helper for visual checks.
+     * 
+     * @param temp      byte array to be printed
+     * @return          String representation of byte array
      */
     private String print(byte[] temp) {
         // visual checks

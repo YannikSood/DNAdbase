@@ -24,6 +24,7 @@ public class MemManager {
         // memory file
         this.memFile = new RandomAccessFile(mF, "rw");
         this.memFile.setLength(0); // overwrite previous file?
+        this.memFile.seek(0); // also have to move this
         
         // free list
         this.freeList = new LinkedList<>();
@@ -62,7 +63,12 @@ public class MemManager {
         // freelist not empty, must go through freelist
         // using first fit
         for (int i = 0; i < freeList.size(); i++) {
-            if (freeList.get(i).getLength() >= len) {
+            // some variables/conversions to use
+            MemHandle freeBlock = freeList.get(i);
+            int lenConv = ((sq.length() + 4 - 1) / 4);
+            
+            // work
+            if (freeBlock.getLength() >= lenConv) {
                 // remember original insert position before seek
                 int temp = (int)memFile.getFilePointer();
                 
@@ -77,22 +83,17 @@ public class MemManager {
                 
                 memFile.write(seq);
                 
-                // replace handle with resultant space if any
-                // len is the sequence being inserted
-                // getLength() will return size of the free block
-                MemHandle freeBlock = freeList.get(i);
-                int lenConv = ((sq.length() + 4 - 1) / 4);
-                int blckConv = ((freeBlock.getLength() + 4 - 1) / 4);
-                
-                if (lenConv == blckConv) {
+                // replace block with resultant space if any
+                // getLength() will return size of the freeblock in bytes
+                if (lenConv == freeBlock.getLength()) {
                     freeList.remove(i);
                 }
                 else {
-                    int newLen = freeBlock.getLength() - sq.length();
+                    int newLen = freeBlock.getLength() - lenConv;
                     int newPos = (int)memFile.getFilePointer();
 
-                    int newLenInBytes = ((newLen + 4 - 1) / 4);
-                    freeList.set(i, new MemHandle(newPos, newLenInBytes * 4));
+                    // freelist handles will hold bytes instead
+                    freeList.set(i, new MemHandle(newPos, newLen));
                 }
                 
                 // return to original insert position
@@ -141,20 +142,20 @@ public class MemManager {
         // seek to the position and remove the record.
         memFile.seek(seqPos);
         
-        // if removing from end of binary file, add to freelist and resize else
-        // add to freelist (no alter binary file, insert will overwrite)
-        // freeList.add(new MemHandle(seqPos, seqLen));
+        // if removing from end of binary file, resize
+        // else add to freelist (no alter binary file, insert will overwrite)
         int lenConv = ((seqLen + 4 - 1) / 4);
         
         if (seqPos + lenConv == memFile.length()) {
             memFile.setLength(memFile.length() - lenConv);
+            memFile.seek(memFile.length());
         }
         else {
-            freeList.add(h);
+            freeList.add(new MemHandle(seqPos, lenConv));
+            memFile.seek(temp);
         }
         
         // return to original insert position and merge adjacent blocks
-        memFile.seek(temp);
         update();
     }
 
