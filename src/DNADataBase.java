@@ -13,6 +13,7 @@ import java.io.IOException;
  */
 public class DNADataBase {
     private MemManager memManager; // memory manager
+    private BucketHash bHash;
 
     /**
      * Default constructor for DNA Database.
@@ -20,8 +21,9 @@ public class DNADataBase {
      * @param   fileName                name of binary file
      * @throws IOException 
      */
-    public DNADataBase(String fileName) throws IOException {
+    public DNADataBase(String fileName, int size) throws IOException {
         this.memManager = new MemManager(fileName);
+        this.bHash = new BucketHash(size);
     }
 
     /**
@@ -43,6 +45,34 @@ public class DNADataBase {
         memManager.insert(seq, Integer.parseInt(len)); // insert sequence
         
         // hash table insertion
+        
+    }
+    
+    /**
+     * Insert a sequence of length len and associated sequence ID
+     * into memory manager and hash-table.
+     * 
+     * @param seqID     sequence's ID
+     * @param len       sequence's length
+     * @param seq       actual sequence
+     * 
+     * @throws IOException
+     * @throws NumberFormatException
+     */
+    public void remove(String seqID) 
+        throws NumberFormatException, IOException {
+        
+        // memory manager insertion
+        
+        // hash table insertion
+        int i = 0;
+        int max = bHash.getMaxSize();
+        while (i < max) {
+            TableEntry temp = bHash.get(i);
+            if (temp.getID() != null && temp.getSequence() != null && temp.getSlot() != -1) {
+                //Get ID and 
+            }
+        }
         
     }
     

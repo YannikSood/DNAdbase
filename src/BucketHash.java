@@ -36,6 +36,15 @@ public class BucketHash implements BucketHashInterface {
     public int getSize() {
         return size;
     }
+    
+    /**
+     * Get the size
+     * 
+     * @return size
+     */
+    public int getMaxSize() {
+        return maxSize;
+    }
 
 
     /**
@@ -60,17 +69,21 @@ public class BucketHash implements BucketHashInterface {
         //int bucket = (i % bucketSize);
 
         // Check if slot is empty/tombstone
-        if (hTable[i] == null || hTable[i].getID() == null) {
+        if (hTable[i] == null || hTable[i].getSlot() == -1) {
             TableEntry temp = new TableEntry(key, value);
+            temp.setSlot(i);
             hTable[i] = temp;
             size++;
             return i;
         }
         else {
             // Bucket hash ?
+            int bP = i / bucketSize;
+            
             for (int j = i; j < maxSize; j++) {
-                if (hTable[j] == null || hTable[j].getID() == null) {
+                if (hTable[j] == null || hTable[j].getSlot() == -1) {
                     TableEntry temp = new TableEntry(key, value);
+                    temp.setSlot(j);
                     hTable[j] = temp;
                     size++;
                     return j;
@@ -83,13 +96,14 @@ public class BucketHash implements BucketHashInterface {
 
 
     /**
-     * peeks the key
+     * A method to return the table entry at the slot
+     * Used for remove, search and print
      * 
      * @param i the slot to peek
      * @return the tableEntry at the slot
      */
-    public TableEntry remove(int i) {
-        if (!hTable[i].getID().equals(null)) {
+    public TableEntry get(int i) {
+        if (hTable[i].getSlot() != -1) {
             TableEntry temp = hTable[i];
             return temp;
         }
@@ -104,20 +118,9 @@ public class BucketHash implements BucketHashInterface {
      */
     public void insertTomb(int slot) {
         TableEntry tomb = new TableEntry(null, null);
+        tomb.setSlot(-1);
         hTable[slot] = tomb;
-    }
-
-    /**
-     * Search for a key if duplicate or not
-     * @param i the slot
-     * @return the entry
-     */
-    public TableEntry search(int i) {
-        if (!hTable[i].getID().equals(null)) {
-            TableEntry temp = hTable[i];
-            return temp;
-        }
-        return null;
+        size--;
     }
 
     /**
