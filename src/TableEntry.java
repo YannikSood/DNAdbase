@@ -5,19 +5,19 @@
  */
 public class TableEntry {
 
-    private String key;
-    private String value;
+    private MemHandle iD;
+    private MemHandle sequence;
     
-    public TableEntry(String k, String v) {
-        key = k;
-        value = v;
+    public TableEntry(MemHandle k, MemHandle v) {
+        iD = k;
+        sequence = v;
     }
     
-    public String getKey() {
-        return key;
+    public MemHandle getID() {
+        return iD;
     }
     
-    public String getValue() {
-        return value;
+    public MemHandle getSequence() {
+        return sequence;
     }
 }
