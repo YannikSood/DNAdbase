@@ -1,4 +1,3 @@
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.LinkedList;
@@ -52,7 +51,8 @@ public class MemManager {
             MemHandle insertHandle = new MemHandle(seqPos, len);
             
             memFile.write(seq);
-            // System.out.println(" " + seqPos); // printing offset
+            // System.out.println(seqPos); // printing offset after insert
+            // System.out.println(memFile.length()); // file size after insert
             
             // update(); // merge adjacent free blocks if any
             
@@ -88,10 +88,11 @@ public class MemManager {
                     freeList.remove(i);
                 }
                 else {
-                    int newLen = blckConv - lenConv; // length in bytes
+                    int newLen = freeBlock.getLength() - sq.length();
                     int newPos = (int)memFile.getFilePointer();
 
-                    freeList.set(i, new MemHandle(newPos, newLen * 4));
+                    int newLenInBytes = ((newLen + 4 - 1) / 4);
+                    freeList.set(i, new MemHandle(newPos, newLenInBytes * 4));
                 }
                 
                 // return to original insert position
@@ -120,12 +121,14 @@ public class MemManager {
      * Release space associated with a record.
      * 
      * @param h             memory handle storing data
+     * 
+     * @precondition        assumes valid release calls (does check empty)
      * @throws IOException  
      */
     public void release(MemHandle h) throws IOException {
         // if the file is empty, return
         if (memFile.length() == 0) {
-            return;
+            throw new IOException("File is empty.");
         }
         
         // remember original remove position before seek
@@ -138,8 +141,15 @@ public class MemManager {
         // seek to the position and remove the record.
         memFile.seek(seqPos);
         
+        // if removing from end of binary file, add to freelist and resize else
         // add to freelist (no alter binary file, insert will overwrite)
-        freeList.add(new MemHandle(seqPos, seqLen));
+        // freeList.add(new MemHandle(seqPos, seqLen));
+        freeList.add(h);
+        
+        int lenConv = ((seqLen + 4 - 1) / 4);
+        if (seqPos + lenConv == memFile.length()) {
+            memFile.setLength(memFile.length() - lenConv);
+        }
         
         // return to original insert position and merge adjacent blocks
         memFile.seek(temp);
@@ -147,12 +157,12 @@ public class MemManager {
     }
 
     /**
-     * Get back a copy of a stored record.
+     * Get back a copy of a stored sequence.
      * 
      * @param h     memory handle storing data
      * @return      byte array containing sequence
      */
-    public byte[] getRecord(MemHandle h) {
+    public byte[] getSequence(MemHandle h) {
         
 
         return null;

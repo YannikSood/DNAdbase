@@ -57,6 +57,7 @@ public class MemManagerTest extends TestCase {
         }
         
         assertEquals("[27, 27, 0, 3]", Arrays.toString(result));
+        raf.close();
     }
     
     /**
@@ -150,7 +151,192 @@ public class MemManagerTest extends TestCase {
         MemHandle handOne = mem.insert("ACGTACGTACGTACGT", 16);
     }
     
+    /**
+     * Testing the release method on an empty file.
+     * 
+     * @throws IOException
+     */
+    public void testReleaseBase() throws IOException {
+        Exception exception = null;
+        
+        try {
+            mem.release(new MemHandle(0, 4));
+        }
+        catch (IOException e) {
+            exception = e;
+            assertNotNull(exception);
+            assertTrue(e instanceof IOException);
+        }
+    }
+    
+    /**
+     * Testing release method on non-empty file. Middle case.
+     * 
+     * @throws IOException
+     */
+    public void testReleaseMiddle() throws IOException {
+        // insert some sequences
+        MemHandle one = mem.insert("AAAAA", 5); // 2 bytes
+        MemHandle two = mem.insert("ACGT", 4); // 1 byte
+        MemHandle three = mem.insert(
+            "AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
+        
+        // size check
+        RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
+        assertEquals(13, raf.length());
+        
+        // releasing middle
+        assertEquals(0, mem.getList().size());
+        mem.release(two); // should release middle 1 byte, does not modify file
+        assertEquals(13, raf.length());
+        
+        assertEquals(1, mem.getList().size()); // added to freelist
+        assertEquals(two, mem.getList().get(0)); // check they're the same
+        
+        // check no change occurred
+        result = new byte[1];
+        raf.seek(2);
+        result[0] = raf.readByte();
+        
+        assertEquals("[27]", Arrays.toString(result));
+        raf.close();
+    }
+    
+    /**
+     * Testing release left side.
+     * 
+     * @throws IOException
+     */
+    public void testReleaseLeft() throws IOException {
+        // insert some sequences
+        MemHandle one = mem.insert("AAAAA", 5); // 2 bytes
+        MemHandle two = mem.insert("ACGT", 4); // 1 byte
+        MemHandle three = mem.insert(
+            "AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
+        
+        // size check
+        RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
+        assertEquals(13, raf.length());
+        
+        // release left
+        assertEquals(0, mem.getList().size());
+        mem.release(one); // should release left 2 bytes, does not modify file
+        assertEquals(13, raf.length());
+        
+        assertEquals(1, mem.getList().size()); // added to freelist
+        assertEquals(one, mem.getList().get(0)); // check they're the same
+        
+        // check no change occurred
+        result = new byte[2];
+        raf.seek(0);
+        result[0] = raf.readByte();
+        result[1] = raf.readByte();
+        
+        assertEquals("[0, 0]", Arrays.toString(result));
+        raf.close();
+    }
+    
+    /**
+     * Test release on last block of file.
+     * 
+     * @throws IOException
+     */
+    public void testReleaseRight() throws IOException {
+        // insert some sequences
+        MemHandle one = mem.insert("AAAAA", 5); // 2 bytes
+        MemHandle two = mem.insert("ACGT", 4); // 1 byte
+        MemHandle three = mem.insert(
+            "AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
+        
+        // size check
+        RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
+        assertEquals(13, raf.length());
+        
+        // release right
+        assertEquals(0, mem.getList().size());
+        mem.release(three); // should release right 10 bytes, trims size
+        assertEquals(3, raf.length());
+        
+        assertEquals(1, mem.getList().size()); // added to freelist
+        assertEquals(three, mem.getList().get(0)); // check they're the same
+    }
+    
+    /**
+     * Test a release followed by an insertion that causes overwrite.
+     * 
+     * @throws IOException
+     */
+    public void testReleaseInsert() throws IOException {
+        // insert some sequences
+        MemHandle one = mem.insert("AAAAA", 5); // 2 bytes
+        MemHandle two = mem.insert("ACGT", 4); // 1 byte
+        MemHandle three = mem.insert(
+            "AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
+        
+        // size check
+        RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
+        assertEquals(13, raf.length());
+        
+        // release left
+        assertEquals(0, mem.getList().size());
+        mem.release(one); // should release left 2 bytes, does not modify file
+        assertEquals(13, raf.length());
+        
+        assertEquals(1, mem.getList().size()); // added to freelist
+        assertEquals(one, mem.getList().get(0)); // check they're the same
+        
+        mem.insert("TTTTTTT", 4); // insert 2 bytes, should overwrite
+        assertEquals(13, raf.length()); // size doesn't change
+        
+        // check change
+        result = new byte[2];
+        raf.seek(0);
+        result[0] = raf.readByte();
+        result[1] = raf.readByte();
+        
+        assertEquals("[-1, -4]", Arrays.toString(result));
+        raf.close();
+    }
+    
+    /**
+     * Test a release followed by an insertion that inserts to free block.
+     * Another free block should result from this.
+     * 
+     * @throws IOException
+     */
+    public void testReleaseInsertFree() throws IOException {
+        RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
+        testReleaseRight();
+        assertEquals(3, raf.length());
 
+        mem.insert("ACCATT", 6); // new insertion should append, 2 bytes
+        
+        // check change
+        assertEquals(5, raf.length());
+        
+        result = new byte[2];
+        raf.seek(3);
+        result[0] = raf.readByte();
+        result[1] = raf.readByte();
+        
+        assertEquals("[20, -16]", Arrays.toString(result));
+        raf.close();
+        
+        // 2 bytes out of the 10 that were removed, therefore list should
+        // contains a freeblock of 8 bytes now
+        assertEquals(1, mem.getList().size());
+        int newSize = ((mem.getList().get(0).getLength() + 4 - 1) / 4);
+        assertEquals(8, newSize);
+    }
+    
+    /**
+     * Test a release followed by an insertion that is unable to find
+     * suitable freeblock and therefore appends to end.
+     */
+    public void testReleaseInsertAppend() {
+        
+    }
+    
     /**
      * Test stringToByteArray method base cases.
      */
