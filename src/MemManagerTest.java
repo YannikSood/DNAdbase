@@ -361,11 +361,93 @@ public class MemManagerTest extends TestCase {
     }
     
     /**
-     * Test a release following by insertion looks through more than
+     * Test a release following insertion that looks through more than
      * one block to find a suitable location.
+     * 
+     * @throws IOException
      */
-    public void testReleaseInsertSearches() {
+    public void testReleaseInsertSearches() throws IOException {
+        // insert some sequences
+        MemHandle one = mem.insert("AAAAA", 5); // 2 bytes
+        MemHandle two = mem.insert("ACGT", 4); // 1 byte
+        MemHandle three = mem.insert(
+            "AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
+        MemHandle four = mem.insert("TTTTCC", 6); // 2 bytes
+        MemHandle five = mem.insert("G", 1); // 1 byte
         
+        // size check
+        RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
+        assertEquals(16, raf.length());
+        
+        // releasing middle blocks (no adjacent)
+        assertEquals(0, mem.getList().size());
+        mem.release(two);
+        mem.release(four);
+        assertEquals(16, raf.length());
+        assertEquals(2, mem.getList().size()); // added to freelist
+        
+        mem.insert("ACGTT", 5); // needs 2 bytes, skips first block
+        mem.insert("A", 1); // uses first block
+        assertEquals(0, mem.getList().size());
+        
+        // check changes
+        result = new byte[2];
+        raf.seek(13);
+        result[0] = raf.readByte();
+        result[1] = raf.readByte();
+        
+        assertEquals("[27, -64]", print(result));
+        
+        result = new byte[1];
+        raf.seek(2);
+        result[0] = raf.readByte();
+        
+        assertEquals("[0]", print(result));
+    }
+    
+    /**
+     * Test a release following insertion that looks through more than
+     * one block to find a suitable location and splits accordingly. We then
+     * keep inserting until freelist is empty and appending is required.
+     * 
+     * @throws IOException
+     */
+    public void testReleaseInsertSearchesSplit() throws IOException {
+        // insert some sequences
+        MemHandle one = mem.insert("AAAAA", 5); // 2 bytes
+        MemHandle two = mem.insert("ACGT", 4); // 1 byte
+        MemHandle three = mem.insert(
+            "AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT", 40); // 10 bytes
+        MemHandle four = mem.insert("TTTTCCTTACGTACG", 15); // 4 bytes
+        MemHandle five = mem.insert("GG", 1); // 1 byte
+        
+        // size check
+        RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
+        assertEquals(18, raf.length());
+        
+        // releasing middle blocks (no adjacent)
+        assertEquals(0, mem.getList().size());
+        mem.release(two);
+        mem.release(four);
+        assertEquals(18, raf.length());
+        assertEquals(2, mem.getList().size()); // added to freelist
+        
+        mem.insert("ACGTT", 5); // needs 2 bytes, skips first block, split next
+        assertEquals(2, mem.getList().size());
+        
+        // check freeblocks
+        assertEquals(1, mem.getList().get(0).getLength());
+        assertEquals(2, mem.getList().get(1).getLength());
+
+        // exhaust the memory
+        mem.insert("T", 1); // uses first block
+        mem.insert("C", 1); // uses second block, split
+        mem.insert("G", 1); // uses first block (last one)
+        assertEquals(0, mem.getList().size());
+        
+        mem.insert("ACGT", 1); // appends to end since freelist is empty
+        raf.seek(raf.length() - 1);
+        assertEquals(27, raf.readByte());
     }
     
     /**
