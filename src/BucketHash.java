@@ -39,7 +39,7 @@ public class BucketHash implements BucketHashInterface {
 
 
     /**
-     * Get the size
+     * Get the maximum size
      * 
      * @return size
      */
@@ -61,16 +61,14 @@ public class BucketHash implements BucketHashInterface {
      *            the sequence for sFold
      * @return the slot
      */
-    public int insert(String seqID, MemHandle key, MemHandle value) {
+    public int insert(Object seqID, Object key, Object value) {
         // if (insertion possible) { run sFold, find slot, insert, increment
         // size, return slot}
         // Get slot
-        String k = seqID;
+        String k = (String)seqID;
         int i = sfold(k, maxSize);
         // int bucket = (i % bucketSize);
-      
-        
-        
+
         for (int j = 0; j < 32; j++) {
             if (hTable[i] == null || hTable[i].getSlot() == -1) {
                 break;
@@ -84,7 +82,7 @@ public class BucketHash implements BucketHashInterface {
 
         }
         if (hTable[i] == null || hTable[i].getSlot() == -1) {
-            TableEntry temp = new TableEntry(key, value);
+            TableEntry temp = new TableEntry((MemHandle)key, (MemHandle)value);
             temp.setSlot(i);
             hTable[i] = temp;
             size++;
@@ -156,33 +154,5 @@ public class BucketHash implements BucketHashInterface {
 
         sum = (sum * sum) >> 8;
         return (int)(Math.abs(sum) % M);
-    }
-
-
-    @Override
-    public int insert(Object string, Object key, Object value) {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-
-    @Override
-    public TableEntry remove(Object key) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-
-    @Override
-    public int search(Object key) {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-
-    @Override
-    public int reHash() {
-        // TODO Auto-generated method stub
-        return 0;
     }
 }
