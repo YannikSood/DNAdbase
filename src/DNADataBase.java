@@ -98,7 +98,7 @@ public class DNADataBase {
                 // Convert to bytes
                 comp = this.testTemp(id, m);
                 // Compare
-                if (comp.equals(seqID)) {
+                if (comp.equals(seqID) && comp.length() == seqID.length()) {
                     byte[] seq = memManager.getSequence(temp.getSequence());
 
                     // Convert to bytes
@@ -167,7 +167,7 @@ public class DNADataBase {
                 comp = this.testTemp(id, m);
 
                 // Compare
-                if (comp.equals(seqID)) {
+                if (comp.equals(seqID) && comp.length() == seqID.length()) {
                     found = true;
                     // Get seqID in bytes from Mem Manager
                     byte[] seq = memManager.getSequence(temp.getSequence());
@@ -183,7 +183,7 @@ public class DNADataBase {
             System.out.println("Sequence Found: " + out);
         }
         else {
-            System.out.println("SequenceID " + seqID + " not found");
+            System.out.println("SequenceID " + seqID + " not found.");
         }
     }
 
@@ -201,7 +201,7 @@ public class DNADataBase {
         int i = 0;
         int max = bHash.getMaxSize();
 
-        System.out.println("SequnceIDs:");
+        System.out.println("SequenceIDs:");
         // Iterate through HT
         if (bHash.getSize() > 0) {
             while (i < max) {
@@ -274,7 +274,7 @@ public class DNADataBase {
                 String comp = this.testTemp(id, m);
 
                 // Compare
-                if (comp.equals(seqID)) {
+                if (comp.equals(seqID) && comp.length() == seqID.length()) {
                     return true;
                 }
             }

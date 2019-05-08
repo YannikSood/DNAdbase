@@ -11,6 +11,7 @@ import java.util.Scanner;
  */
 public class Sorter {
     private String cFile; // command file name
+    private String hFile;
     private final int HTSIZE; // never changes size once program starts
     private String mFile; // memory manager file name
 
@@ -33,7 +34,7 @@ public class Sorter {
      * @throws IOException
      * @throws NumberFormatException
      */
-    public Sorter(String cF, String hTS, String mF)
+    public Sorter(String cF, String hF, String hTS, String mF)
         throws NumberFormatException,
         IOException {
 
@@ -45,6 +46,7 @@ public class Sorter {
             // file names
             this.cFile = cF;
             this.mFile = mF;
+            this.hFile = hF;
 
             // initialize database
             this.dBase = new DNADataBase(mFile, HTSIZE);
