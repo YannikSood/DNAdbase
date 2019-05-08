@@ -39,4 +39,22 @@ public class MemHandle {
     public int getLength() {
         return this.length;
     }
+    
+    /**
+     * Set this handle's length
+     * 
+     * @param l     length to be set
+     */
+    public void setLength(int l) {
+        this.length = l;
+    }
+    
+    /**
+     * Set this handle's position
+     * 
+     * @param p     position to be set
+     */
+    public void setPosition(int p) {
+        this.position = p;
+    }
 }

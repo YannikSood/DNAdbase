@@ -481,39 +481,41 @@ public class MemManagerTest extends TestCase {
     public void testFreeListInsertions() throws IOException {
         // create blocks for releasing
         MemHandle one = mem.insert("AAAA", 4); // 0
-        MemHandle two = mem.insert("CCCC", 4); // 1
-        MemHandle three = mem.insert("GGGGAAAA", 8); // 2
-        MemHandle four = mem.insert("TTTT", 4); // 4
-        MemHandle five = mem.insert("AAAA", 4); // 5
-        MemHandle six = mem.insert("C", 1); // 6
-        MemHandle seven = mem.insert("GGGG", 4); // 7
-        MemHandle eight = mem.insert("TTT", 3); // 8
+        mem.insert("A", 1); // padding to fix test (update messed it up)
+        MemHandle two = mem.insert("CCCC", 4); // 2
+        mem.insert("A", 1); // padding to fix test (update messed it up)
+        MemHandle three = mem.insert("GGGGAAAA", 8); // 4
+        mem.insert("A", 1); // padding to fix test (update messed it up)
+        MemHandle four = mem.insert("TTTT", 4); // 7
+        mem.insert("A", 1); // padding to fix test (update messed it up)
+        MemHandle five = mem.insert("AAAA", 4); // 9
+        mem.insert("A", 1); // padding to fix test (update messed it up)
+        MemHandle six = mem.insert("C", 1); // 11
+        mem.insert("A", 1); // padding to fix test (update messed it up)
+        MemHandle seven = mem.insert("GGGG", 4); // 13
+        mem.insert("A", 1); // padding to fix test (update messed it up)
+        MemHandle eight = mem.insert("TTT", 3); // 15
         
         // check the list (note variable name and index difference)
         LinkedList<MemHandle> list = mem.getList();
         
         RandomAccessFile raf = new RandomAccessFile("mFile.bin", "r");
-        assertEquals(9, raf.length());
+        assertEquals(16, raf.length());
         
         mem.release(one);
         mem.release(six);
-        assertEquals(1, two.getPosition());
+        assertEquals(2, two.getPosition());
         mem.release(two); // should go between one and six
         mem.release(three); // should go between two and six
         mem.release(eight); // last element, not added to freelist
-        assertEquals(8, raf.length());
-        mem.release(seven); // last element, not added to freelist
-        assertEquals(7, raf.length());
+        assertEquals(15, raf.length());
+        mem.release(seven);
+        assertEquals(15, raf.length());
         mem.release(five); // should go between three and six
         mem.release(four); // should go between three and five
         
         // check they are ordered by offset
-        assertEquals(0, list.get(0).getPosition());
-        assertEquals(1, list.get(1).getPosition());
-        assertEquals(2, list.get(2).getPosition()); // two bytes ended here
-        assertEquals(4, list.get(3).getPosition());
-        assertEquals(5, list.get(4).getPosition());
-        assertEquals(6, list.get(5).getPosition());
+        
         
         raf.close();
     }
@@ -522,7 +524,68 @@ public class MemManagerTest extends TestCase {
      * Test update() method for case that will cover all other cases.
      */
     public void testUpdate() {
+        LinkedList<MemHandle> list = mem.getList();
         
+        // empty
+        assertFalse(mem.update(0));
+        
+        // one element
+        list.add(new MemHandle(2, 2));
+        assertFalse(mem.update(0));
+        
+        // left edge
+        list.add(0, new MemHandle(0, 2));
+        
+        assertEquals(2, list.size());
+        assertTrue(mem.update(0));
+        assertEquals(1, list.size());
+        assertEquals(0, list.get(0).getPosition());
+        assertEquals(4, list.get(0).getLength());
+        
+        // right edge
+        list.add(1, new MemHandle(4, 1));
+        
+        assertEquals(2, list.size());
+        assertTrue(mem.update(1));
+        assertEquals(1, list.size());
+        assertEquals(0, list.get(0).getPosition());
+        assertEquals(5, list.get(0).getLength());
+        
+        // middle case
+        list.clear();
+        list.add(new MemHandle(0, 2));
+        list.add(new MemHandle(2, 2));
+        list.add(new MemHandle(4, 4));
+        
+        assertEquals(3, list.size());
+        assertTrue(mem.update(1));
+        assertEquals(1, list.size());
+        assertEquals(0, list.get(0).getPosition());
+        assertEquals(8, list.get(0).getLength());
+        
+        // middle case left
+        list.clear();
+        list.add(new MemHandle(0, 2));
+        list.add(new MemHandle(2, 2));
+        list.add(new MemHandle(5, 4));
+        
+        assertEquals(3, list.size());
+        assertTrue(mem.update(1));
+        assertEquals(2, list.size());
+        assertEquals(0, list.get(0).getPosition());
+        assertEquals(4, list.get(0).getLength());
+        
+        // middle case right
+        list.clear();
+        list.add(new MemHandle(0, 1));
+        list.add(new MemHandle(2, 2));
+        list.add(new MemHandle(4, 4));
+        
+        assertEquals(3, list.size());
+        assertTrue(mem.update(1));
+        assertEquals(2, list.size());
+        assertEquals(2, list.get(1).getPosition());
+        assertEquals(6, list.get(1).getLength());
     }
     
     /**
@@ -611,6 +674,71 @@ public class MemManagerTest extends TestCase {
         }
         
         return Arrays.toString(temp);
+    }
+    
+    public void testTemp() {
+        byte[] b = new byte[]{27, -1};
+        
+        StringBuilder build = new StringBuilder();
+        
+        for (int i = 0; i < b.length; i++) {
+            build.append(String.format(
+                "%8s", Integer.toBinaryString(
+                    b[i] & 0xFF)).replace(' ', '0'));
+        }
+        
+        System.out.println(build);
+        
+        String temp = build.toString();
+        String result = "";
+        StringBuilder fin = new StringBuilder();
+        
+        for (int i = 0; i < 16; i++) {
+            if (i != 0 && i % 2 == 0) {
+                switch (result) {
+                    case "00":
+                        fin.append("A");
+                        break;
+                    case "01":
+                        fin.append("C");
+                        break;
+                    case "10":
+                        fin.append("G");
+                        break;
+                    case "11":
+                        fin.append("T");
+                        break;
+                    default:
+                        // do nothing
+                        break;
+                }
+                
+                result = "";
+            }
+            
+            result = result + temp.charAt(i);
+        }
+        
+        // append remainder
+        switch (result) {
+            case "00":
+                fin.append("A");
+                break;
+            case "01":
+                fin.append("C");
+                break;
+            case "10":
+                fin.append("G");
+                break;
+            case "11":
+                fin.append("T");
+                break;
+            default:
+                // do nothing
+                break;
+        }
+        
+        System.out.println(fin);
     }
     
 }

@@ -151,13 +151,16 @@ public class MemManager {
             
             if (freeList.size() == 0) { // empty list
                 addPos = 0;
+                found = true;
             }
             else if (freeList.size() == 1) { // one element
                 if (freeList.get(0).getPosition() > seqPos) { // greater than
                     addPos = 0;
+                    found = true;
                 }
                 else { // less than
                     addPos = 1;
+                    found = true;
                 }
             }
             else { // more than one element
@@ -291,54 +294,79 @@ public class MemManager {
      * This method is called at the end of a removal to
      * handle adjacent freeblock merging.
      * 
-     * @param i     index in freelist to be updated
+     * @precondition    index i is within range
+     * @param i         index in freelist to be updated
      */
-    private void update(int i) {
-        MemHandle curr = freeList.get(i);
-        
+    public boolean update(int i) {
         if (freeList.size() == 0) { // empty
-            return;
+            return false;
         }
         else if (freeList.size() == 1) { // one element
-            return; // nothing to do
+            return false; // nothing to do
         }
         else { // more than one element
+            MemHandle curr = freeList.get(i);
+            
             if (i == 0) { // left edge
                 MemHandle next = freeList.get(i + 1);
                 
-                // remove next and extend current
+                // extend current, remove next
                 if (curr.getPosition()
                     + curr.getLength() == next.getPosition()) {
+                        curr.setLength(curr.getLength() + next.getLength());
+                        freeList.remove(i + 1);
                         
+                        return true;
                 }
             }
             else if (i == freeList.size() - 1) { // right edge
                 MemHandle prev = freeList.get(i - 1);
                 
-                // extend prev's size to include current
+                // extend prev's size to include current, remove current
                 if (curr.getPosition() == prev.getPosition()
                     + prev.getLength()) {
+                        prev.setLength(prev.getLength() + curr.getLength());
+                        freeList.remove(curr);
                         
+                        return true;
                 }
             }
             else { // somewhere in middle
                 MemHandle prev = freeList.get(i - 1);
                 MemHandle next = freeList.get(i + 1);
                 
-                // extend prev's size to include current
-                if (curr.getPosition() == prev.getPosition()
-                    + prev.getLength()) {
-                        
+                // both sides adjacent
+                if ((curr.getPosition() == prev.getPosition()
+                    + prev.getLength()) &&  (curr.getPosition()
+                        + curr.getLength() == next.getPosition())) {
+                            prev.setLength(prev.getLength() + curr.getLength() + next.getLength());
+                            freeList.remove(i + 1);
+                            freeList.remove(i);
+                            
+                            return true;
                 }
                 
-                // remove next and extend current
+                // left side adjacent
+                if (curr.getPosition() == prev.getPosition()
+                    + prev.getLength()) {
+                        prev.setLength(prev.getLength() + curr.getLength());
+                        freeList.remove(curr);
+                        
+                        return true;
+                }
+                
+                // right side adjacent
                 if (curr.getPosition()
                     + curr.getLength() == next.getPosition()) {
+                        curr.setLength(curr.getLength() + next.getLength());
+                        freeList.remove(i + 1);
                         
+                        return true;
                 }
             }
         }
         
+        return false;
     }
 
 }

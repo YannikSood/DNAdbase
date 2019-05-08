@@ -23,4 +23,18 @@ public class MemHandleTest extends TestCase {
         assertEquals(3, handle.getPosition());
         assertEquals(10, handle.getLength());
     }
+    
+    /**
+     * Test setter methods.
+     */
+    public void testMemHandleSetter() {
+        assertEquals(3, handle.getPosition());
+        assertEquals(10, handle.getLength());
+        
+        handle.setLength(1);
+        handle.setPosition(1);
+        
+        assertEquals(1, handle.getPosition());
+        assertEquals(1, handle.getLength());
+    }
 }
