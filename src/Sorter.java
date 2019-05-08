@@ -11,8 +11,6 @@ import java.util.Scanner;
  */
 public class Sorter {
     private String cFile; // command file name
-    private String hFile;
-    private final int HTSIZE; // never changes size once program starts
     private String mFile; // memory manager file name
 
     private DNADataBase dBase; // DNA Database
@@ -37,25 +35,24 @@ public class Sorter {
     public Sorter(String cF, String hF, String hTS, String mF)
         throws NumberFormatException,
         IOException {
-
+        int hTSIZE = 0;
         // initialize hash-table-size constant
-        this.HTSIZE = Integer.parseInt(hTS);
+        hTSIZE = Integer.parseInt(hTS);
 
         // check legal inputs
-        if (HTSIZE % 32 == 0) {
+        if (hTSIZE % 32 == 0) {
             // file names
             this.cFile = cF;
             this.mFile = mF;
-            this.hFile = hF;
-
+            
             // initialize database
-            this.dBase = new DNADataBase(mFile, HTSIZE);
+            this.dBase = new DNADataBase(mFile, hTSIZE);
 
             // parsing
             try {
                 // command file
                 File cmmdFile = new File(cFile);
-
+                
                 // scanner for file
                 Scanner fileScan = new Scanner(cmmdFile);
                 fileScan.useDelimiter("\\s+");

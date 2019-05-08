@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.util.LinkedList;
 
 /**
  * DNADBase class is a database system for DNA sequences.
@@ -20,10 +21,10 @@ public class DNADataBase {
      * 
      * @param fileName
      *            name of binary file
-     *            
+     * 
      * @param size
      *            size of hash table
-     *            
+     * 
      * @throws IOException
      */
     public DNADataBase(String fileName, int size) throws IOException {
@@ -42,25 +43,23 @@ public class DNADataBase {
      *            sequence's length
      * @param seq
      *            actual sequence
+     * @return int
      * 
      * @throws IOException
      * @throws NumberFormatException
      */
-    public void insert(String seqID, String len, String seq)
+    public int insert(String seqID, String len, String seq)
         throws NumberFormatException,
         IOException {
 
         // Check for duplicates
         if (!this.insertSearch(seqID)) {
 
-            MemHandle idHandle = memManager.insert(seqID, seqID.length()); // insert
+            MemHandle idHandle = memManager.insert(seqID, seqID.length());
             MemHandle seqHandle = memManager.insert(seq, Integer.parseInt(len));
             int slot = bHash.insert(seqID, idHandle, seqHandle);
 
-            if (slot > -1) {
-                //Do nothing
-            }
-            else {
+            if (slot == -1) {
                 System.out.println("Bucket full.Sequence " + seqID
                     + " could not be inserted");
             }
@@ -68,6 +67,7 @@ public class DNADataBase {
         else {
             System.out.println("SequenceID " + seqID + " exists");
         }
+        return 1;
     }
 
 
@@ -98,7 +98,7 @@ public class DNADataBase {
                 // Get seqID in bytes from Mem Manager
                 byte[] id = memManager.getSequence(temp.getID());
                 int m = temp.getID().getLength();
-                
+
                 // Convert to bytes
                 comp = this.testTemp(id, m);
                 // Compare
@@ -106,11 +106,9 @@ public class DNADataBase {
                     byte[] seq = memManager.getSequence(temp.getSequence());
 
                     // Convert to bytes
-                    out = this.testTemp(seq, temp.getSequence()
-                        .getLength());//
+                    out = this.testTemp(seq, temp.getSequence().getLength());
                     // Remove from HT
                     bHash.insertTomb(i);
-                    
 
                     // Remove from MM
                     memManager.release(temp.getID());
@@ -131,6 +129,7 @@ public class DNADataBase {
         }
 
     }
+
 
     /**
      * Search a sequence in memory manager and hash-table as a helper for insert
@@ -162,7 +161,7 @@ public class DNADataBase {
                 // Get seqID in bytes from Mem Manager
                 byte[] id = memManager.getSequence(temp.getID());
                 int m = temp.getID().getLength();
-                
+
                 // Convert to bytes
                 comp = this.testTemp(id, m);
 
@@ -218,13 +217,13 @@ public class DNADataBase {
                     byte[] id = memManager.getSequence(temp.getID());
 
                     int m = temp.getID().getLength();
-                    
+
                     // Convert to bytes
                     String comp = this.testTemp(id, m);
 
                     int slot = temp.getSlot();
-                    
-                    //convert to string & print
+
+                    // convert to string & print
                     System.out.println(comp + ": hash slot [" + slot + "]");
 
                 }
@@ -234,11 +233,19 @@ public class DNADataBase {
                 System.out.println("Free Block List: none");
             }
             else {
+                LinkedList<MemHandle> list = memManager.getList();
                 System.out.println("Free Block List:");
+
+                for (int p = 0; i < memManager.getListSize(); p++) {
+                    System.out.println("[Block " + i + "]"
+                        + "Starting Byte Location: " + list.get(i).getPosition()
+                        + ", " + "Size " + list.get(i).getLength() + "bytes");
+                }
             }
         }
 
     }
+
 
     /**
      * Search a sequence in memory manager and hash-table as a helper for insert
@@ -267,9 +274,9 @@ public class DNADataBase {
 
                 // Get seqID in bytes from Mem Manager
                 byte[] id = memManager.getSequence(temp.getID());
-                
+
                 int m = temp.getID().getLength();
-                
+
                 // Convert to bytes
                 String comp = this.testTemp(id, m);
 
@@ -283,23 +290,29 @@ public class DNADataBase {
         return false;
     }
 
+
     /**
-     * Test temp
+     * Tt
+     * 
+     * @param b
+     *            j
+     * @param l
+     *            l
+     * @return string
      */
     public String testTemp(byte[] b, int l) {
-        
+
         StringBuilder build = new StringBuilder();
-        
+
         for (int i = 0; i < b.length; i++) {
-            build.append(String.format(
-                "%8s", Integer.toBinaryString(
-                    b[i] & 0xFF)).replace(' ', '0'));
+            build.append(String.format("%8s", Integer.toBinaryString(b[i]
+                & 0xFF)).replace(' ', '0'));
         }
-        
+
         String temp = build.toString();
         String result = "";
         StringBuilder fin = new StringBuilder();
-        
+
         for (int i = 0; i < l * 2; i++) {
             if (i != 0 && i % 2 == 0) {
                 switch (result) {
@@ -319,13 +332,13 @@ public class DNADataBase {
                         // do nothing
                         break;
                 }
-                
+
                 result = "";
             }
-            
+
             result = result + temp.charAt(i);
         }
-        
+
         // append remainder
         switch (result) {
             case "00":
@@ -344,10 +357,9 @@ public class DNADataBase {
                 // do nothing
                 break;
         }
-        
+
         return fin.toString();
-        
+
     }
- 
 
 }

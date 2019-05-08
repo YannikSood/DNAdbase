@@ -13,7 +13,7 @@ public class BucketHash implements BucketHashInterface {
     /**
      * Creates a hashtable with the size provided
      * 
-     * @param size  intended size
+     * @param s  intended size
      */
     public BucketHash(int s) {
         maxSize = s;
@@ -121,15 +121,15 @@ public class BucketHash implements BucketHashInterface {
      * 
      * @param s
      *            string
-     * @param M
+     * @param m
      *            size
      * @return slot
      */
-    public int sfold(String s, int M) {
+    public int sfold(String s, int m) {
         int intLength = s.length() / 4;
         long sum = 0;
         for (int j = 0; j < intLength; j++) {
-            char c[] = s.substring(j * 4, (j * 4) + 4).toCharArray();
+            char[] c = s.substring(j * 4, (j * 4) + 4).toCharArray();
             long mult = 1;
             for (int k = 0; k < c.length; k++) {
                 sum += c[k] * mult;
@@ -137,7 +137,7 @@ public class BucketHash implements BucketHashInterface {
             }
         }
 
-        char c[] = s.substring(intLength * 4).toCharArray();
+        char[] c = s.substring(intLength * 4).toCharArray();
         long mult = 1;
         for (int k = 0; k < c.length; k++) {
             sum += c[k] * mult;
@@ -145,6 +145,6 @@ public class BucketHash implements BucketHashInterface {
         }
 
         sum = (sum * sum) >> 8;
-        return (int)(Math.abs(sum) % M);
+        return (int)(Math.abs(sum) % m);
     }
 }

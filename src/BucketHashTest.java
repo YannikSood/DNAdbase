@@ -1,7 +1,7 @@
 import student.TestCase;
 
 /**
- * Test clas for bucket hash
+ * Test class for bucket hash
  * 
  * @author adaniel1 (Daniel Almeida) & yannik24 (Yannik Sood)
  * @version 5/1/19

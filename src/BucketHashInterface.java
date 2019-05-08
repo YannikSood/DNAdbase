@@ -8,7 +8,7 @@
  * @param <K> Type
  * @param <V> Type
  */
-public interface BucketHashInterface <T, K, V> {
+public interface BucketHashInterface<T, K, V> {
 
     
     /**
@@ -18,6 +18,7 @@ public interface BucketHashInterface <T, K, V> {
      * 
      * @param key Key Handle
      * @param value Handle
+     * @param string string
      * @return the slot
      */
     public int insert(T string, K key, V value);
