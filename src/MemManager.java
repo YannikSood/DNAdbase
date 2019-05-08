@@ -293,7 +293,9 @@ public class MemManager {
      * 
      * @param i     index in freelist to be updated
      */
-    private void update(int i) {     
+    private void update(int i) {
+        MemHandle curr = freeList.get(i);
+        
         if (freeList.size() == 0) { // empty
             return;
         }
@@ -301,27 +303,39 @@ public class MemManager {
             return; // nothing to do
         }
         else { // more than one element
-            if (i == 0) { // left side
+            if (i == 0) { // left edge
                 MemHandle next = freeList.get(i + 1);
                 
-                
-                
-                
+                // remove next and extend current
+                if (curr.getPosition()
+                    + curr.getLength() == next.getPosition()) {
+                        
+                }
             }
-            else if (i == freeList.size() - 1) { // right side
+            else if (i == freeList.size() - 1) { // right edge
                 MemHandle prev = freeList.get(i - 1);
                 
-                
-                
-                
+                // extend prev's size to include current
+                if (curr.getPosition() == prev.getPosition()
+                    + prev.getLength()) {
+                        
+                }
             }
             else { // somewhere in middle
                 MemHandle prev = freeList.get(i - 1);
                 MemHandle next = freeList.get(i + 1);
                 
+                // extend prev's size to include current
+                if (curr.getPosition() == prev.getPosition()
+                    + prev.getLength()) {
+                        
+                }
                 
-                
-                
+                // remove next and extend current
+                if (curr.getPosition()
+                    + curr.getLength() == next.getPosition()) {
+                        
+                }
             }
         }
         
