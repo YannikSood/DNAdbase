@@ -1,28 +1,25 @@
-
 /**
  * A generic hashtable for the bucket hash
  * 
- * @author yanniksood
- * @version 04/30/2019
+ * @author adaniel1 (Daniel Almeida) & yannik24 (Yannik Sood)
+ * @version 5/1/19
  */
 public class BucketHash implements BucketHashInterface {
-
+    // variables
     private TableEntry[] hTable;
     private int maxSize;
     private int size;
 
-
     /**
      * Creates a hashtable with the size provided
      * 
-     * @param size
+     * @param size  intended size
      */
     public BucketHash(int s) {
         maxSize = s;
         hTable = new TableEntry[maxSize];
         size = 0;
     }
-
 
     /**
      * Get the size
@@ -42,7 +39,6 @@ public class BucketHash implements BucketHashInterface {
     public int getMaxSize() {
         return maxSize;
     }
-
 
     /**
      * Assumes insertion is possible

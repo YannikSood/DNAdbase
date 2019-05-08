@@ -1,5 +1,11 @@
 import student.TestCase;
 
+/**
+ * Test clas for bucket hash
+ * 
+ * @author adaniel1 (Daniel Almeida) & yannik24 (Yannik Sood)
+ * @version 5/1/19
+ */
 public class BucketHashTest extends TestCase {
     private BucketHash hTable;
     private MemHandle m1;

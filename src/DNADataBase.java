@@ -20,6 +20,10 @@ public class DNADataBase {
      * 
      * @param fileName
      *            name of binary file
+     *            
+     * @param size
+     *            size of hash table
+     *            
      * @throws IOException
      */
     public DNADataBase(String fileName, int size) throws IOException {
@@ -127,10 +131,6 @@ public class DNADataBase {
         }
 
     }
-
-
-
-
 
     /**
      * Search a sequence in memory manager and hash-table as a helper for insert
