@@ -33,6 +33,7 @@ public class BucketHashTest extends TestCase {
         assertEquals(63, hTable.insert("TCATATCTATCCAAAAAAA", m1, m2));
         assertEquals(32, hTable.insert("TCATATCTATCCAAAAAA", m1, m2));
         assertEquals(7, hTable.getSize());
+        assertEquals("AAAAA", hTable.get(6).getID().toString());
     }
     
 }

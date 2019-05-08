@@ -34,7 +34,7 @@ public class Sorter {
         String mF) throws NumberFormatException, IOException {
 
         // initialize hash-table-size constant
-        this.HTSIZE = Integer.parseInt(hTS);
+        this.HTSIZE = (int) Integer.parseInt(hTS);
 
         // check legal inputs
         if (HTSIZE % 32 == 0) {
@@ -91,11 +91,12 @@ public class Sorter {
                                 seqID = lineScan.next();
 
                                 if (stringCheck(seqID)) {
-                                    
+                                    dBase.remove(seqID);
                                 }
 
                                 break;
                             case "print":
+                                
                                 
 
                                 break;
@@ -103,7 +104,7 @@ public class Sorter {
                                 seqID = lineScan.next();
 
                                 if (stringCheck(seqID)) {
-                                    
+                                    dBase.search(seqID);
                                 }
 
                                 break;

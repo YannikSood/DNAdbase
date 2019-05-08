@@ -1,4 +1,13 @@
-
+/**
+ * The interface for the hashtable
+ * 
+ * @author yanniksood
+ * @version 05.07.19
+ *
+ * @param <T> Type
+ * @param <K> Type
+ * @param <V> Type
+ */
 public interface BucketHashInterface <T, K, V> {
 
     
@@ -11,11 +20,6 @@ public interface BucketHashInterface <T, K, V> {
      * @return the slot
      */
     public int insert(T string, K key, V value);
-    
-    public TableEntry remove(K key);
-    
-    public int search(K key);
-    
-    public int reHash();
+ 
 
 }
