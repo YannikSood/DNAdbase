@@ -291,6 +291,15 @@ public class MemManager {
     }
     
     /**
+     * Get list size
+     * 
+     * @return size
+     */
+    public int getListSize() {
+        return this.freeList.size();
+    }
+    
+    /**
      * This method is called at the end of a removal to
      * handle adjacent freeblock merging.
      * 

@@ -6,12 +6,11 @@ import java.util.Scanner;
 /**
  * Sorter class responsible for parsing all data.
  * 
- * @author  adaniel1 (Daniel Almeida) & yannik24 (Yannik Sood)
+ * @author adaniel1 (Daniel Almeida) & yannik24 (Yannik Sood)
  * @version 5/1/19
  */
 public class Sorter {
     private String cFile; // command file name
-    private String hFile; // hash file name
     private final int HTSIZE; // never changes size once program starts
     private String mFile; // memory manager file name
 
@@ -19,28 +18,32 @@ public class Sorter {
 
 
     /**
-     * Default constructor initializes database and variables, 
+     * Default constructor initializes database and variables,
      * checks for legal inputs and parses input commands from command file.
      * 
-     * @param cF                        command file name
-     * @param hF                        hash file name
-     * @param hTS                       desired hash table size
-     * @param mF                        memory manager binary file name
+     * @param cF
+     *            command file name
+     * @param hF
+     *            hash file name
+     * @param hTS
+     *            desired hash table size
+     * @param mF
+     *            memory manager binary file name
      * 
      * @throws IOException
      * @throws NumberFormatException
      */
-    public Sorter(String cF, String hF, String hTS,
-        String mF) throws NumberFormatException, IOException {
+    public Sorter(String cF, String hTS, String mF)
+        throws NumberFormatException,
+        IOException {
 
         // initialize hash-table-size constant
-        this.HTSIZE = (int) Integer.parseInt(hTS);
+        this.HTSIZE = Integer.parseInt(hTS);
 
         // check legal inputs
         if (HTSIZE % 32 == 0) {
             // file names
             this.cFile = cF;
-            this.hFile = hF;
             this.mFile = mF;
 
             // initialize database
@@ -59,13 +62,15 @@ public class Sorter {
                     String line = fileScan.nextLine();
 
                     // line count
-                    /*Scanner lineCount = new Scanner(line);
-                        int count = 0;
-                        while (lineCount.hasNext()) {
-                            lineCount.next();
-                            count++;
-                        }
-                        lineCount.close();*/
+                    /*
+                     * Scanner lineCount = new Scanner(line);
+                     * int count = 0;
+                     * while (lineCount.hasNext()) {
+                     * lineCount.next();
+                     * count++;
+                     * }
+                     * lineCount.close();
+                     */
 
                     Scanner lineScan = new Scanner(line); // line scanner
 
@@ -97,8 +102,7 @@ public class Sorter {
                                 break;
                             case "print":
                                 
-                                
-
+                                dBase.print();
                                 break;
                             case "search":
                                 seqID = lineScan.next();
@@ -131,12 +135,14 @@ public class Sorter {
         }
     }
 
+
     /**
      * Check that the string contains valid characters A, C, G or T
      * 
-     * @param sq   sequence to be checked
+     * @param sq
+     *            sequence to be checked
      * 
-     * @return      true if valid sequence
+     * @return true if valid sequence
      */
     private boolean stringCheck(String sq) {
         if (sq.length() == 0) {
@@ -145,8 +151,8 @@ public class Sorter {
         }
 
         for (int i = 0; i < sq.length(); i++) {
-            if (sq.charAt(i) != 'A' && sq.charAt(i) != 'C'
-                && sq.charAt(i) != 'G' && sq.charAt(i) != 'T') {
+            if (sq.charAt(i) != 'A' && sq.charAt(i) != 'C' && sq.charAt(
+                i) != 'G' && sq.charAt(i) != 'T') {
 
                 System.out.println("Invalid Sequence: " + sq);
 
@@ -160,15 +166,22 @@ public class Sorter {
     /**
      * Helper method for testing if parser is working correctly.
      * 
-     * @param c     Command
-     * @param n     Name
-     * @param x     x coordinate
-     * @param y     y coordinate
-     * @param w     width
-     * @param h     height
+     * @param c
+     *            Command
+     * @param n
+     *            Name
+     * @param x
+     *            x coordinate
+     * @param y
+     *            y coordinate
+     * @param w
+     *            width
+     * @param h
+     *            height
      *//*
-    private void printTest(String c, String sID, String l, String s) {
-        System.out.println(c + " " + sID + " " + l + "\n" + s);
-    }*/
+        * private void printTest(String c, String sID, String l, String s) {
+        * System.out.println(c + " " + sID + " " + l + "\n" + s);
+        * }
+        */
 
 }

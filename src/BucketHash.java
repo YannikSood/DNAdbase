@@ -10,8 +10,6 @@ public class BucketHash implements BucketHashInterface {
     private TableEntry[] hTable;
     private int maxSize;
     private int size;
-    private int numBuckets;
-    private int bucketSize;
 
 
     /**
@@ -23,8 +21,6 @@ public class BucketHash implements BucketHashInterface {
         maxSize = s;
         hTable = new TableEntry[maxSize];
         size = 0;
-        numBuckets = s / 32;
-        bucketSize = 32;
     }
 
 
@@ -102,7 +98,7 @@ public class BucketHash implements BucketHashInterface {
      * @return the tableEntry at the slot
      */
     public TableEntry get(int i) {
-        if (hTable[i].getSlot() != -1) {
+        if (hTable[i] != null && hTable[i].getSlot() != -1) {
             TableEntry temp = hTable[i];
             return temp;
         }

@@ -1,7 +1,12 @@
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Test;
+import java.io.IOException;
+import student.TestCase;
 
-public class DNADataBaseTest {
+/**
+ * HH
+ * @author yanniksood
+ * @version 05.07.19
+ */
+public class DNADataBaseTest extends TestCase{
     private DNADataBase dbase;
     
     /**
@@ -12,33 +17,20 @@ public class DNADataBaseTest {
     }
     
     /**
-     * 
+     * @throws IOException 
+     * Setup
      */
-    public void setUp() {
-        //
+    public void setUp() throws IOException {
+        dbase = new DNADataBase("mFile.bin", 64);
     }
 
-    @Test
-    void testInsert() {
-        fail("Not yet implemented");
-    }
-
-
-    @Test
-    void testRemove() {
-        fail("Not yet implemented");
-    }
-
-
-    @Test
-    void testSearch() {
-        fail("Not yet implemented");
-    }
-
-
-    @Test
-    void testPrint() {
-        fail("Not yet implemented");
+    /**
+     * Test insert
+     * @throws IOException 
+     * @throws NumberFormatException 
+     */
+    public void testInsert() throws NumberFormatException, IOException {
+         dbase.insert("AAAAA", "40", "AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT");
     }
 
 }

@@ -4,14 +4,16 @@ public class BucketHashTest extends TestCase {
     private BucketHash hTable;
     private MemHandle m1;
     private MemHandle m2;
-    
+
+
     /**
      * Unused Constructor
      */
     public BucketHashTest() {
-        //Unused Constructor
+        // Unused Constructor
     }
-    
+
+
     /**
      * Set Up
      */
@@ -20,7 +22,8 @@ public class BucketHashTest extends TestCase {
         m1 = new MemHandle(2, 4);
         m2 = new MemHandle(2, 4);
     }
-    
+
+
     /**
      * Test Insert
      */
@@ -33,7 +36,6 @@ public class BucketHashTest extends TestCase {
         assertEquals(63, hTable.insert("TCATATCTATCCAAAAAAA", m1, m2));
         assertEquals(32, hTable.insert("TCATATCTATCCAAAAAA", m1, m2));
         assertEquals(7, hTable.getSize());
-        assertEquals("AAAAA", hTable.get(6).getID().toString());
     }
-    
+
 }
