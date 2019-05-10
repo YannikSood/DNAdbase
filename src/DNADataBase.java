@@ -182,7 +182,7 @@ public class DNADataBase {
             System.out.println("Sequence Found: " + out);
         }
         else {
-            System.out.println("SequenceID " + seqID + " not found.");
+            System.out.println("SequenceID " + seqID + " not found");
         }
     }
 
@@ -200,7 +200,7 @@ public class DNADataBase {
         int i = 0;
         int max = bHash.getMaxSize();
 
-        System.out.println("SequenceIDs:");
+        System.out.println("Sequence IDs:");
         // Iterate through HT
         if (bHash.getSize() > 0) {
             while (i < max) {
@@ -236,12 +236,17 @@ public class DNADataBase {
                 LinkedList<MemHandle> list = memManager.getList();
                 System.out.println("Free Block List:");
 
-                for (int p = 0; i < memManager.getListSize(); p++) {
-                    System.out.println("[Block " + i + "]"
-                        + "Starting Byte Location: " + list.get(i).getPosition()
-                        + ", " + "Size " + list.get(i).getLength() + "bytes");
+                for (int p = 0; p < memManager.getListSize(); p++) {
+                    System.out.println("[Block " + (p + 1) + "]"
+                        + " Starting Byte Location: "
+                        + list.get(p).getPosition()
+                        + ", " + "Size " 
+                        + list.get(p).getLength() + " bytes");
                 }
             }
+        }
+        else {
+            System.out.println("Free Block List: none");
         }
 
     }

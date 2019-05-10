@@ -365,8 +365,8 @@ public class MemManager {
                 if ((curr.getPosition() == prev.getPosition() + prev
                     .getLength()) && (curr.getPosition() + curr
                         .getLength() == next.getPosition())) {
-                        prev.setLength(prev.getLength() + curr.getLength() + next
-                            .getLength());
+                    prev.setLength(prev.getLength() 
+                        + curr.getLength() + next.getLength());
                     freeList.remove(i + 1);
                     freeList.remove(i);
 
