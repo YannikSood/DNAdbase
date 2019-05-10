@@ -236,7 +236,7 @@ public class DNADataBase {
                 LinkedList<MemHandle> list = memManager.getList();
                 System.out.println("Free Block List:");
 
-                for (int p = 0; p < memManager.getListSize(); p++) {
+                for (int p = 0; p < memManager.getListSize() - 1; p++) {
                     System.out.println("[Block " + (p + 1) + "]"
                         + " Starting Byte Location: "
                         + list.get(p).getPosition()
