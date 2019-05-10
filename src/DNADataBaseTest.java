@@ -38,5 +38,16 @@ public class DNADataBaseTest extends TestCase {
         assertNotNull(dbase.insert("AAAAA", "40",
             "AAAATTTTCCCCGGGGAAAACCCCGGGGTTTTAAAATTTT"));
     }
+    
+    /**
+     * Test insert
+     * 
+     * @throws IOException
+     * @throws NumberFormatException
+     */
+    public void testInsertProblem() throws NumberFormatException, IOException {
+        assertNotNull(dbase.insert("TCGGG", "5",
+            "AAAAA"));
+    }
 
 }
