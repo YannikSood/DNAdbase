@@ -147,7 +147,7 @@ public class MemManager {
         // else add to freelist (no alter binary file, insert will overwrite)
         int lenConv = ((seqLen + 4 - 1) / 4);
 
-        if (seqPos + lenConv == memFile.length()) {
+        if (seqPos + lenConv == memFile.length()) { // end of file
             memFile.setLength(memFile.length() - lenConv);
             memFile.seek(memFile.length());
         }
@@ -352,7 +352,7 @@ public class MemManager {
                 if (curr.getPosition() == prev.getPosition() + prev
                     .getLength()) {
                     prev.setLength(prev.getLength() + curr.getLength());
-                    freeList.remove(curr);
+                    freeList.remove(i);
 
                     return true;
                 }
@@ -377,7 +377,7 @@ public class MemManager {
                 if (curr.getPosition() == prev.getPosition() + prev
                     .getLength()) {
                     prev.setLength(prev.getLength() + curr.getLength());
-                    freeList.remove(curr);
+                    freeList.remove(i);
 
                     return true;
                 }

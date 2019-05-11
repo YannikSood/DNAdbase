@@ -693,4 +693,52 @@ public class MemManagerTest extends TestCase {
 
         return Arrays.toString(temp);
     }
+    
+    /**
+     * Suggested test to find issue.
+     * 
+     * @throws IOException 
+     *//*
+    public void testTA() throws IOException {
+        MemHandle idOne = mem.insert("AAAAA", 5); // 2 bytes
+        MemHandle seqOne = mem.insert("ACGTACGTACGTACGTACGT", 20); // 5 bytes
+        
+        MemHandle idTwo = mem.insert("AAAAA", 5); // 2 bytes
+        MemHandle seqTwo = mem.insert("ACGT", 4); // 1 byte
+        
+        MemHandle idThree = mem.insert("T", 1); // 1 byte
+        MemHandle seqThree = mem.insert("ACGTACGT", 8); // 2 bytes
+        
+        MemHandle idFour = mem.insert("AAA", 3); // 1 byte
+        MemHandle seqFour = mem.insert("ACGTACGTACGTACGT", 16); // 4 bytes
+        
+        mem.release(seqThree);
+        mem.release(idThree);
+        
+        MemHandle idFive = mem.insert("AAA", 3); // 1 byte
+        MemHandle seqFive = mem.insert("ACGTACGTACGT", 12); // 3 bytes
+        
+        MemHandle idSix = mem.insert("TTTTTTTTTTTTTTTT", 16); // 4 bytes
+        MemHandle seqSix = mem.insert("AAAA", 4); // 1 byte
+        
+        MemHandle idSeven = mem.insert("ACG", 3); // 1 byte
+        MemHandle seqSeven = mem.insert("AAAAAAAC", 8); // 4 bytes
+        
+        MemHandle idEight = mem.insert("ACGTA", 5); // 2 bytes
+        MemHandle seqEight = mem.insert("CCCC", 4); // 1 byte
+        
+        mem.release(seqSix);
+        mem.release(idSix);
+        
+        mem.release(seqEight);
+        mem.release(idEight);
+        
+        MemHandle idNine = mem.insert("TTTT", 4); // 1 byte
+        MemHandle seqNine = mem.insert("AAAAAAAAAAAAAAAAAAAA", 20); // 5 bytes
+        
+        mem.release(seqSeven);
+        mem.release(idSeven);
+        
+        assertEquals(2, mem.getListSize());
+    }*/
 }

@@ -111,8 +111,8 @@ public class DNADataBase {
                     bHash.insertTomb(i);
 
                     // Remove from MM
-                    memManager.release(temp.getID());
                     memManager.release(temp.getSequence());
+                    memManager.release(temp.getID());
 
                     found = true;
                     break;
