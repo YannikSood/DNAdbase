@@ -232,6 +232,18 @@ public class DNADataBase {
             if (memManager.getListSize() == 0) {
                 System.out.println("Free Block List: none");
             }
+            else if (memManager.getListSize() == 1) {
+                LinkedList<MemHandle> list = memManager.getList();
+                System.out.println("Free Block List:");
+
+                for (int p = 0; p < memManager.getListSize(); p++) {
+                    System.out.println("[Block " + (p + 1) + "]"
+                        + " Starting Byte Location: "
+                        + list.get(p).getPosition()
+                        + ", " + "Size " 
+                        + list.get(p).getLength() + " bytes");
+                }
+            }
             else {
                 LinkedList<MemHandle> list = memManager.getList();
                 System.out.println("Free Block List:");
